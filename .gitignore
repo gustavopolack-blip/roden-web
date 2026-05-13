@@ -1,0 +1,9 @@
+# Archivos de trabajo interno (no van al sitio)
+*.md
+*.psd
+
+# Git broken init (borrar antes del commit limpio)
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini

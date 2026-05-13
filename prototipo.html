@@ -1,0 +1,2350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rødën — prototipo estructural</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+/* ---------- Custom fonts (TRIAL — para evaluación, no para producción) ---------- */
+@font-face {
+  font-family: 'Söhne';
+  src: url('TestSohne-Leicht.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Söhne';
+  src: url('TestSohne-BuchKursiv.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Söhne';
+  src: url('TestSohne-HalbfettKursiv.otf') format('opentype');
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Söhne Breit';
+  src: url('TestSohneBreit-Extraleicht.otf') format('opentype');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Söhne Breit';
+  src: url('TestSohneBreit-Kraftig.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Söhne Breit';
+  src: url('TestSohneBreit-ExtrafettKursiv.otf') format('opentype');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'GT America Compressed';
+  src: url('GT-America-Compressed-Ultra-Light-Trial.otf') format('opentype');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'GT America Compressed';
+  src: url('GT-America-Compressed-Thin-Trial.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'GT America Compressed';
+  src: url('GT-America-Compressed-Regular-Trial.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'GT America Compressed';
+  src: url('GT-America-Compressed-Bold-Trial.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --bg-primary: #FAFAF8;
+  --bg-elevated: #FFFFFF;
+  --text-primary: #111111;
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+  --border-default: #E5E5E5;
+  --border-strong: #111111;
+  --placeholder-bg: #E5E5E5;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+a, button { touch-action: manipulation; } /* Elimina delay 300ms tap en Android */
+
+html { scroll-padding-top: 80px; }
+
+body {
+  font-family: 'Söhne', 'Inter', -apple-system, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 16px;
+  line-height: 1.55;
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---------- Typography tokens (Söhne body + GT America Compressed display) ---------- */
+.t-display, .t-h1, .t-h2 {
+  font-family: 'GT America Compressed', 'Söhne', 'Inter', sans-serif;
+}
+
+/* La marca rødën siempre se renderiza idéntica al logo del home — Inter Light, 300, letter-spacing -0.01em.
+   Inter incluye ø y ë en su cobertura Unicode, por eso se renderiza consistente.
+   Bloqueamos todas las propiedades con !important para que el contenedor no pueda afectar la marca. */
+.brand {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 300 !important;
+  font-style: normal !important;
+  font-variant: normal !important;
+  text-transform: none !important;
+  letter-spacing: -0.01em !important;
+  font-feature-settings: normal !important;
+  font-kerning: normal !important;
+}
+
+.t-display { font-size: 40px; line-height: 1.0; font-weight: 400; letter-spacing: -0.01em; }
+.t-h1 { font-size: 48px; line-height: 1.0; font-weight: 400; letter-spacing: -0.005em; }
+.t-h2 { font-size: 36px; line-height: 1.05; font-weight: 400; letter-spacing: 0; }
+.t-h3 { font-size: 22px; line-height: 1.3; font-weight: 300; letter-spacing: -0.005em; }
+.t-body-l { font-size: 17px; line-height: 1.55; font-weight: 300; }
+.t-body-m { font-size: 16px; line-height: 1.6; font-weight: 300; }
+.t-body-s { font-size: 14px; line-height: 1.5; font-weight: 300; color: var(--text-secondary); }
+.t-label { font-size: 12px; line-height: 1.4; font-weight: 300; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-tertiary); }
+.t-button { font-size: 15px; line-height: 1; font-weight: 300; letter-spacing: 0.04em; }
+.t-quote { font-weight: 300; font-size: 19px; line-height: 1.45; letter-spacing: -0.005em; font-style: italic; }
+
+@media (min-width: 1024px) {
+  .t-display { font-size: 80px; line-height: 0.95; }
+  .t-h1 { font-size: 80px; line-height: 0.95; }
+  .t-h2 { font-size: 52px; line-height: 1.05; }
+  .t-h3 { font-size: 28px; line-height: 1.25; }
+  .t-body-l { font-size: 19px; }
+  .t-quote { font-size: 24px; }
+}
+
+/* ---------- Layout ---------- */
+.container {
+  width: 100%;
+  padding: 0 24px;
+  margin: 0 auto;
+}
+@media (min-width: 768px) { .container { padding: 0 32px; } }
+@media (min-width: 1024px) { .container { padding: 0 40px; max-width: none; } }
+@media (min-width: 1440px) { .container { padding: 0 48px; max-width: none; } }
+
+.section { padding: 64px 0; }
+@media (min-width: 1024px) { .section { padding: 96px 0; } }
+
+.text-narrow { max-width: 720px; }
+
+/* ---------- Header ---------- */
+header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  height: 64px;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-default);
+  transition: background 250ms ease-out, color 250ms ease-out, border-color 250ms ease-out;
+}
+@media (min-width: 1024px) { header { height: 80px; } }
+
+header.transparent {
+  background: transparent;
+  border-bottom-color: transparent;
+}
+header.transparent .nav-link,
+header.transparent .logo,
+header.transparent .hamburger { color: #FFF; }
+
+header.transparent .hamburger span { background: #FFF; }
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.logo {
+  font-family: 'Söhne', 'Inter', sans-serif;
+  font-size: 22px;
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: inherit;
+  padding: 0;
+  /* Mobile: logo izquierda, hamburger derecha */
+  order: 1;
+}
+@media (min-width: 1024px) {
+  .logo { order: unset; }
+}
+
+.nav-desktop {
+  display: none;
+  gap: 40px;
+  list-style: none;
+  margin-left: auto;
+  order: 2;
+}
+@media (min-width: 1024px) { .nav-desktop { display: flex; } }
+
+.nav-link {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 300;
+  cursor: pointer;
+  padding: 8px 0;
+  position: relative;
+  transition: color 150ms ease-out;
+}
+@media (hover: hover) and (pointer: fine) {
+  .nav-link:hover { color: var(--text-secondary); }
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 2px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 180ms ease-out;
+}
+.nav-link.active::after { opacity: 1; }
+
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 28px;
+  padding: 8px 0;
+  order: 3; /* Siempre a la derecha en mobile */
+  touch-action: manipulation;
+}
+.hamburger span {
+  display: block;
+  width: 24px;
+  height: 1px;
+  background: var(--text-primary);
+  transform-origin: center;
+  transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1), opacity 150ms ease-out, background 250ms ease-out;
+}
+.hamburger.open span:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+.hamburger.open span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+.hamburger.open span:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+@media (min-width: 1024px) { .hamburger { display: none; } }
+
+/* ---------- Floating WhatsApp button ---------- */
+.wa-float {
+  position: fixed;
+  bottom: 56px;
+  right: 24px;
+  z-index: 90;
+  width: 56px;
+  height: 56px;
+  background: rgba(17, 17, 17, 0.82);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  transition: transform 200ms ease-out, background 200ms ease-out, opacity 200ms ease-out;
+}
+.wa-float svg { width: 28px; height: 28px; }
+@media (hover: hover) and (pointer: fine) {
+  .wa-float:hover {
+    background: rgba(0, 0, 0, 0.95);
+    transform: translateY(-2px);
+  }
+}
+.wa-float:active { transform: scale(0.96); }
+@media (min-width: 1024px) {
+  .wa-float { bottom: 72px; right: 32px; width: 60px; height: 60px; }
+  .wa-float svg { width: 30px; height: 30px; }
+}
+
+.mobile-menu {
+  position: fixed;
+  top: 64px; left: 0; right: 0; bottom: 0;
+  background: var(--bg-primary);
+  z-index: 99;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 24px;
+  gap: 24px;
+  transform: translateY(-100%);
+  visibility: hidden;
+  transition: transform 280ms cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 280ms;
+}
+.mobile-menu.open {
+  transform: translateY(0);
+  visibility: visible;
+  transition: transform 280ms cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0s;
+}
+.mobile-menu .nav-link { font-size: 24px; text-align: left; padding: 12px 0; border-bottom: 1px solid var(--border-default); }
+
+main { padding-top: 64px; }
+@media (min-width: 1024px) { main { padding-top: 80px; } }
+
+main.home-active { padding-top: 0; } /* hero is full-bleed in home */
+
+/* ---------- Page system ---------- */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ---------- Hero (Home) ---------- */
+.hero {
+  height: 100vh;
+  height: 100svh; /* iOS Safari: excluye chrome del browser */
+  min-height: 600px;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  color: #fff;
+  overflow: hidden;
+}
+
+/* ── Hero slideshow ──────────────────────────────────────────── */
+.hero-slides {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  will-change: transform, opacity;
+  transition: opacity 1.8s cubic-bezier(0.45, 0, 0.55, 1);
+}
+.hero-slide.active { opacity: 1; }
+
+/* Ken Burns — 3 variantes de dirección para rotar entre slides */
+.hero-slide.kb-1 { animation: kenburns-1 9s ease-out forwards; }
+.hero-slide.kb-2 { animation: kenburns-2 9s ease-out forwards; }
+.hero-slide.kb-3 { animation: kenburns-3 9s ease-out forwards; }
+.hero-slide.kb-4 { animation: kenburns-4 9s ease-out forwards; }
+
+@keyframes kenburns-1 {
+  from { transform: scale(1.08); }
+  to   { transform: scale(1.00); }
+}
+@keyframes kenburns-2 {
+  from { transform: scale(1.07) translate(1.5%, 0.8%); }
+  to   { transform: scale(1.00) translate(0, 0); }
+}
+@keyframes kenburns-3 {
+  from { transform: scale(1.07) translate(-1.5%, -0.5%); }
+  to   { transform: scale(1.00) translate(0, 0); }
+}
+@keyframes kenburns-4 {
+  from { transform: scale(1.06) translate(0, 1%); }
+  to   { transform: scale(1.00) translate(0, 0); }
+}
+
+.hero-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.28) 50%, rgba(0,0,0,0.82) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+.hero-scroll-hint {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  opacity: 0;
+  animation: scroll-hint-fade 1s ease-out 2.2s forwards;
+  pointer-events: none;
+}
+@keyframes scroll-hint-fade {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(6px); }
+  100% { opacity: 0.45; transform: translateX(-50%) translateY(0); }
+}
+.hero-scroll-hint svg {
+  animation: scroll-hint-bob 2s ease-in-out 3.2s infinite;
+}
+@keyframes scroll-hint-bob {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(5px); }
+}
+@media (min-width: 1024px) {
+  .hero { height: 90vh; height: 90svh; }
+}
+.hero-content {
+  padding: 0 24px 64px; /* bottom más alto para dejar espacio al scroll-hint */
+  width: 100%;
+  z-index: 2;
+}
+@media (min-width: 1024px) {
+  .hero-content { padding: 0 40px 80px; max-width: none; margin: 0; }
+}
+@media (min-width: 1440px) {
+  .hero-content { padding: 0 48px 96px; }
+}
+.hero h1 {
+  max-width: 22ch;
+  margin-bottom: 24px;
+  opacity: 0.92;
+  mix-blend-mode: normal;
+  font-weight: 400;
+}
+/* Reducir display en pantallas muy pequeñas para que respire */
+@media (max-width: 390px) {
+  .t-display { font-size: 34px; }
+}
+.hero .hero-sub { max-width: 60ch; margin-bottom: 32px; opacity: 0.75; font-weight: 400; }
+@media (min-width: 768px) {
+  .hero .hero-sub { margin-bottom: 48px; }
+}
+.hero-ctas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+/* En mobile los botones del hero ocupan todo el ancho: más fáciles de tocar */
+@media (max-width: 767px) {
+  .hero-ctas .btn { width: 100%; }
+}
+@media (min-width: 768px) {
+  .hero-ctas { flex-direction: row; gap: 16px; }
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 32px;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 0;
+  border: none;
+  transition: background 200ms ease-out, color 200ms ease-out, transform 100ms ease-out;
+  text-align: center;
+}
+.btn:active { transform: scale(0.98); }
+@media (min-width: 1024px) { .btn { padding: 18px 40px; } }
+
+.btn-primary {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--text-primary);
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+
+.hero .btn-primary { background: #fff; color: #111; }
+.hero .btn-ghost { color: #fff; border-color: #fff; }
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover { background: #000; }
+  .btn-ghost:hover { background: var(--text-primary); color: var(--bg-primary); }
+  .hero .btn-primary:hover { background: #eee; }
+  .hero .btn-ghost:hover { background: #fff; color: #111; }
+}
+
+.link-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 12px 0;
+  text-decoration: none;
+  transition: color 150ms ease-out;
+}
+.link-arrow:hover { text-decoration: underline; }
+
+.link-arrow.inverse { color: #fff; }
+
+/* ---------- Section header ---------- */
+.section-header {
+  margin-bottom: 32px;
+}
+@media (min-width: 1024px) { .section-header { margin-bottom: 48px; } }
+
+.section-header h2 { margin-bottom: 16px; }
+
+.section-intro { max-width: 56ch; color: var(--text-secondary); }
+
+/* ---------- Tres puntos de partida ---------- */
+.tres-puntos {
+  border-top: 1px solid var(--border-default);
+  background: var(--bg-primary);
+}
+.tres-puntos .puntos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin-top: 32px;
+}
+@media (min-width: 1024px) {
+  .tres-puntos .puntos-list { flex-direction: row; gap: 48px; margin-top: 48px; }
+}
+.punto {
+  flex: 1;
+  display: flex;
+  gap: 16px;
+}
+.punto-num {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  min-width: 32px;
+  letter-spacing: 0.05em;
+}
+.punto-body h3 { font-size: 18px; font-weight: 500; margin-bottom: 8px; }
+.punto-body p { color: var(--text-secondary); font-size: 15px; line-height: 1.55; }
+
+.tres-puntos-cta { margin-top: 48px; }
+
+/* ---------- Project grid ---------- */
+.project-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  margin-bottom: 48px;
+}
+@media (min-width: 768px) { .project-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; } }
+@media (min-width: 1024px) { .project-grid { grid-template-columns: repeat(3, 1fr); gap: 32px; } }
+
+.project-card .photo-placeholder {
+  aspect-ratio: 4 / 3;
+  background-color: var(--placeholder-bg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: transform 300ms ease-out;
+  cursor: pointer;
+  overflow: hidden;
+}
+.project-card .photo-placeholder.has-photo { color: transparent; }
+@media (hover: hover) and (pointer: fine) {
+  .project-card:hover .photo-placeholder { transform: scale(1.02); }
+}
+
+.project-card .label-line { color: var(--text-tertiary); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; margin-bottom: 8px; }
+.project-card h3 { font-size: 22px; font-weight: 500; margin-bottom: 8px; }
+.project-card .project-desc { color: var(--text-secondary); font-size: 14px; margin-bottom: 12px; }
+
+/* ---------- Sistema rødën preview ---------- */
+.sistema-modules {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin-bottom: 48px;
+}
+@media (min-width: 1024px) {
+  .sistema-modules {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 32px;
+  }
+}
+.sistema-module .num { font-size: 14px; color: var(--text-tertiary); font-weight: 500; letter-spacing: 0.05em; margin-bottom: 16px; display: block; }
+.sistema-module h3 { font-size: 18px; font-weight: 500; margin-bottom: 12px; line-height: 1.3; }
+.sistema-module p { color: var(--text-secondary); font-size: 14px; line-height: 1.5; }
+
+/* ---------- Quote stripe ---------- */
+.quotes-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+@media (min-width: 1024px) {
+  .quotes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 48px;
+  }
+}
+.quote-card blockquote {
+  font-weight: 300;
+  font-size: 18px;
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+@media (min-width: 1024px) { .quote-card blockquote { font-size: 22px; } }
+.quote-card cite {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-style: normal;
+}
+.quote-card .open-q, .quote-card .close-q { color: var(--text-tertiary); }
+
+.quotes-cierre { font-size: 18px; font-weight: 500; margin-top: 48px; max-width: 520px; }
+.quotes-cta { margin-top: 32px; }
+
+/* ---------- WhatsApp Triple Button ---------- */
+.wa-triple {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 480px;
+  margin: 32px auto 0;
+}
+@media (min-width: 1024px) { .wa-triple { max-width: 560px; } }
+
+.wa-triple .btn { width: 100%; justify-content: space-between; padding-right: 24px; }
+.wa-triple .btn .arrow { color: rgba(255,255,255,0.5); white-space: nowrap; flex-shrink: 0; }
+
+/* En mobile el arrow se oculta para evitar wrapping del texto */
+@media (max-width: 767px) {
+  .wa-triple .btn { justify-content: center; }
+  .wa-triple .btn .arrow { display: none; }
+}
+
+/* ---------- CTA block ---------- */
+.cta-block {
+  text-align: center;
+  border-top: 1px solid var(--border-default);
+  padding: 96px 0;
+}
+.cta-block h2 { margin-bottom: 24px; }
+.cta-block p { color: var(--text-secondary); max-width: 56ch; margin: 0 auto; }
+
+/* ---------- Estudio sections ---------- */
+.apertura-estudio { padding-top: 32px; padding-bottom: 48px; }
+@media (min-width: 1024px) { .apertura-estudio { padding-top: 48px; padding-bottom: 64px; } }
+.apertura-estudio h1 { margin-bottom: 16px; }
+.apertura-estudio .frase-grande { font-size: 28px; font-weight: 500; max-width: 24ch; margin-bottom: 16px; line-height: 1.2; letter-spacing: -0.01em; }
+@media (min-width: 1024px) { .apertura-estudio .frase-grande { font-size: 40px; max-width: 18ch; } }
+.apertura-estudio .frase-aclar { font-size: 18px; color: var(--text-secondary); max-width: 56ch; }
+
+.bio-block {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+@media (min-width: 1024px) {
+  .bio-block { flex-direction: row; gap: 64px; align-items: flex-start; }
+}
+
+.bio-photo {
+  aspect-ratio: 4 / 5;
+  background-color: var(--placeholder-bg);
+  background-size: cover;
+  background-position: center 30%;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  width: 100%;
+}
+.bio-photo.has-photo { color: transparent; }
+@media (min-width: 1024px) { .bio-photo { width: 360px; flex-shrink: 0; } }
+
+.bio-text h3 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+.bio-text .cargo { color: var(--text-secondary); font-size: 14px; margin-bottom: 24px; }
+.bio-text p { margin-bottom: 16px; line-height: 1.6; }
+
+.servicio-block .frase-fuerte { font-size: 32px; font-weight: 500; line-height: 1.15; letter-spacing: -0.015em; margin: 16px 0 32px; }
+@media (min-width: 1024px) { .servicio-block .frase-fuerte { font-size: 48px; max-width: 14ch; } }
+.servicio-block .pasos { font-size: 18px; line-height: 1.6; max-width: 56ch; margin-bottom: 32px; }
+.servicio-block .frase-cierre { font-size: 22px; font-weight: 500; max-width: 30ch; }
+
+.taller-photo {
+  aspect-ratio: 3 / 2;
+  background-color: var(--placeholder-bg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+.taller-photo.has-photo { color: transparent; }
+
+.taller-text { max-width: 56ch; }
+
+.es-no-es {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  border-top: 1px solid var(--border-default);
+  padding-top: 64px;
+}
+@media (min-width: 1024px) {
+  .es-no-es { flex-direction: row; gap: 64px; }
+  .es-no-es > div { flex: 1; }
+}
+.es-no-es h3 { font-size: 18px; font-weight: 500; margin-bottom: 24px; }
+.es-no-es ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+.es-no-es li { font-size: 16px; line-height: 1.5; }
+.es-no-es .es-line::before { content: '✓  '; color: var(--text-primary); }
+.es-no-es .no-line::before { content: '—  '; color: var(--text-secondary); }
+
+/* ---------- Proceso ---------- */
+.apertura-proceso h1 { margin-bottom: 24px; }
+.apertura-proceso .subtitulo {
+  font-size: 18px;
+  color: var(--text-secondary);
+  max-width: 56ch;
+  margin-bottom: 48px;
+  line-height: 1.55;
+}
+@media (min-width: 1024px) { .apertura-proceso .subtitulo { font-size: 20px; } }
+
+.frase-clave-card {
+  border: 1px solid var(--border-default);
+  padding: 32px;
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.3;
+  max-width: 720px;
+  background: var(--bg-elevated);
+}
+@media (min-width: 1024px) { .frase-clave-card { font-size: 28px; padding: 48px; } }
+
+.modules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid var(--border-default);
+}
+
+.module-item {
+  border-bottom: 1px solid var(--border-default);
+  padding: 32px 24px;
+  margin: 0 -24px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 24px;
+  cursor: pointer;
+  transition: background 180ms ease-out;
+}
+@media (hover: hover) and (pointer: fine) {
+  .module-item:hover { background: var(--bg-elevated); }
+  .module-item:hover .module-toggle { color: var(--text-primary); }
+}
+@media (min-width: 1024px) {
+  .module-item {
+    grid-template-columns: 80px 1fr 32px;
+    gap: 32px;
+    padding: 48px 0;
+  }
+}
+
+.module-num {
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  letter-spacing: 0.05em;
+}
+@media (min-width: 1024px) { .module-num { font-size: 32px; } }
+
+.module-body h3 { font-size: 22px; font-weight: 500; margin-bottom: 12px; line-height: 1.3; }
+@media (min-width: 1024px) { .module-body h3 { font-size: 28px; margin-bottom: 16px; } }
+
+.module-evita { color: var(--text-secondary); font-size: 16px; line-height: 1.5; max-width: 56ch; }
+
+.module-toggle {
+  font-size: 20px;
+  font-weight: 300;
+  color: var(--text-tertiary);
+  transition: transform 250ms ease-out;
+  user-select: none;
+  display: none;
+}
+@media (min-width: 1024px) { .module-toggle { display: block; align-self: start; padding-top: 4px; } }
+
+.module-detail {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 350ms ease-out;
+  overflow: hidden;
+  margin-top: 0;
+}
+.module-item.open .module-detail {
+  grid-template-rows: 1fr;
+  margin-top: 32px;
+}
+.module-item.open .module-toggle { transform: rotate(45deg); }
+
+.module-detail-inner { min-height: 0; opacity: 0; transition: opacity 200ms ease-out 150ms; }
+.module-item.open .module-detail-inner { opacity: 1; }
+
+.module-detail .grupo { margin-bottom: 24px; }
+.module-detail .grupo:last-child { margin-bottom: 0; }
+.module-detail .grupo-label { font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 8px; }
+.module-detail .grupo p { color: var(--text-primary); font-size: 16px; line-height: 1.55; max-width: 56ch; }
+.module-detail .valor-destacado { font-size: 22px; font-weight: 500; line-height: 1.25; padding: 24px; border-left: 2px solid var(--text-primary); margin-top: 8px; max-width: 30ch; }
+
+.responsabilidad {
+  background: var(--bg-elevated);
+  padding: 64px 0;
+  border-top: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-default);
+}
+.responsabilidad h2 { margin-bottom: 32px; max-width: 16ch; }
+.responsabilidad p { font-size: 18px; line-height: 1.55; max-width: 56ch; margin-bottom: 16px; color: var(--text-secondary); }
+
+.filtro-block {
+  display: flex;
+  flex-direction: column;
+}
+.filtro-block .filtro-q { font-size: 28px; font-weight: 500; margin-bottom: 32px; line-height: 1.2; letter-spacing: -0.01em; }
+@media (min-width: 1024px) { .filtro-block .filtro-q { font-size: 40px; } }
+
+.filtro-cols {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  border-top: 1px solid var(--border-default);
+  padding-top: 32px;
+}
+@media (min-width: 1024px) {
+  .filtro-cols { flex-direction: row; gap: 64px; }
+  .filtro-cols > div { flex: 1; }
+}
+@media (max-width: 1023px) {
+  .filtro-cols > div + div {
+    border-top: 1px solid var(--border-default);
+    padding-top: 32px;
+    margin-top: 0;
+  }
+}
+
+.cta-block-extended { text-align: center; padding: 96px 0; border-top: 1px solid var(--border-default); }
+.cta-block-extended .descripcion { color: var(--text-secondary); max-width: 56ch; margin: 16px auto 0; line-height: 1.55; }
+.cta-block-extended .empezar-modulo { margin: 32px auto 16px; max-width: 56ch; line-height: 1.55; }
+.cta-block-extended .timing { margin-top: 24px; color: var(--text-secondary); font-size: 14px; max-width: 48ch; margin-left: auto; margin-right: auto; }
+
+/* ---------- Stub pages ---------- */
+.page-stub {
+  padding: 128px 0;
+  text-align: center;
+}
+.page-stub h1 { margin-bottom: 24px; }
+.page-stub p { color: var(--text-secondary); max-width: 56ch; margin: 0 auto 16px; line-height: 1.55; }
+.page-stub .stub-list {
+  list-style: none;
+  margin: 32px auto 0;
+  max-width: 480px;
+  text-align: left;
+  border-top: 1px solid var(--border-default);
+}
+.page-stub .stub-list li { padding: 16px 0; border-bottom: 1px solid var(--border-default); display: flex; gap: 16px; }
+.page-stub .stub-list .num { color: var(--text-tertiary); font-size: 14px; min-width: 24px; }
+
+/* ---------- Proyectos (listing) ---------- */
+.proyectos-apertura {
+  padding-top: 32px;
+  padding-bottom: 0;
+}
+@media (min-width: 1024px) { .proyectos-apertura { padding-top: 48px; } }
+.proyectos-apertura h1 { margin-bottom: 16px; }
+.proyectos-apertura .frase-1 {
+  font-size: 26px;
+  font-weight: 400;
+  max-width: 28ch;
+  margin-bottom: 12px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  opacity: 0.92;
+}
+@media (min-width: 1024px) { .proyectos-apertura .frase-1 { font-size: 36px; max-width: 24ch; } }
+.proyectos-apertura .frase-2 {
+  font-size: 17px;
+  color: var(--text-secondary);
+  max-width: 56ch;
+}
+@media (min-width: 1024px) { .proyectos-apertura .frase-2 { font-size: 19px; } }
+
+.proyectos-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 48px;
+  margin-top: 32px;
+}
+@media (min-width: 1024px) {
+  .proyectos-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 80px 48px;
+    margin-top: 48px;
+  }
+}
+.proyectos-list .project-card .photo-placeholder { margin-bottom: 24px; }
+.proyectos-list .project-card h3 { font-size: 22px; margin-bottom: 8px; }
+@media (min-width: 1024px) {
+  .proyectos-list .project-card h3 { font-size: 30px; line-height: 1.2; }
+}
+.proyectos-list .project-card .project-desc { font-size: 16px; line-height: 1.5; }
+@media (min-width: 1024px) {
+  .proyectos-list .project-card .project-desc { font-size: 17px; }
+}
+
+/* ---------- Proyecto detalle ---------- */
+.proyecto-detalle { padding-top: 64px; }
+@media (min-width: 1024px) { .proyecto-detalle { padding-top: 96px; } }
+
+.breadcrumb { margin-bottom: 32px; }
+.breadcrumb button {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+  letter-spacing: 0.02em;
+}
+.breadcrumb button:hover { color: var(--text-primary); }
+
+.proyecto-header { margin-bottom: 48px; }
+.proyecto-header .label-line {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+.proyecto-header h1 {
+  font-size: 36px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+}
+@media (min-width: 1024px) { .proyecto-header h1 { font-size: 56px; } }
+
+.proyecto-foto-principal {
+  aspect-ratio: 3 / 2;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--placeholder-bg);
+  margin-bottom: 64px;
+}
+@media (min-width: 1024px) { .proyecto-foto-principal { margin-bottom: 96px; } }
+
+.proyecto-narrativa {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 48px;
+  margin-bottom: 96px;
+}
+@media (min-width: 1024px) {
+  .proyecto-narrativa {
+    grid-template-columns: 2fr 1fr;
+    gap: 96px;
+  }
+}
+.proyecto-narrativa-texto h2 { font-size: 22px; font-weight: 500; margin-bottom: 24px; }
+@media (min-width: 1024px) { .proyecto-narrativa-texto h2 { font-size: 28px; } }
+.proyecto-narrativa-texto p {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  max-width: 56ch;
+}
+
+.proyecto-datos { border-top: 1px solid var(--border-default); padding-top: 24px; }
+.proyecto-datos dt {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+}
+.proyecto-datos dd { font-size: 16px; color: var(--text-primary); margin-bottom: 24px; margin-left: 0; }
+
+.proyecto-galeria {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-bottom: 96px;
+}
+@media (min-width: 768px) {
+  .proyecto-galeria { grid-template-columns: repeat(2, 1fr); gap: 32px; }
+}
+.proyecto-galeria .galeria-item {
+  aspect-ratio: 4 / 3;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--placeholder-bg);
+}
+
+.proyecto-cta { text-align: center; padding: 96px 0; border-top: 1px solid var(--border-default); }
+.proyecto-cta h2 { margin-bottom: 24px; }
+
+/* ---------- Inspiración ---------- */
+.inspiracion-apertura {
+  padding-top: 32px;
+  padding-bottom: 0;
+}
+@media (min-width: 1024px) { .inspiracion-apertura { padding-top: 48px; } }
+.inspiracion-apertura h1 { margin-bottom: 16px; }
+.inspiracion-apertura .frame {
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  max-width: 56ch;
+  font-weight: 400;
+}
+@media (min-width: 1024px) { .inspiracion-apertura .frame { font-size: 22px; max-width: 60ch; } }
+
+.inspiracion-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 48px;
+  margin-top: 32px;
+}
+@media (min-width: 768px) {
+  .inspiracion-list { grid-template-columns: repeat(2, 1fr); gap: 48px 24px; }
+}
+@media (min-width: 1024px) {
+  .inspiracion-list { grid-template-columns: repeat(4, 1fr); gap: 56px 24px; margin-top: 48px; }
+}
+
+.design-card .photo-placeholder { margin-bottom: 16px; }
+.design-card .label-line { color: var(--text-tertiary); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; margin-bottom: 8px; }
+.design-card h3 { font-size: 20px; font-weight: 500; margin-bottom: 8px; line-height: 1.3; }
+@media (min-width: 1024px) { .design-card h3 { font-size: 22px; } }
+.design-card .design-desc { color: var(--text-secondary); font-size: 14px; margin-bottom: 12px; line-height: 1.5; max-width: 38ch; }
+
+.inspiracion-cta-final {
+  text-align: center;
+  padding: 96px 0;
+  border-top: 1px solid var(--border-default);
+}
+.inspiracion-cta-final .pregunta {
+  font-size: 22px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+@media (min-width: 1024px) { .inspiracion-cta-final .pregunta { font-size: 28px; } }
+.inspiracion-cta-final .invitacion { color: var(--text-secondary); margin-bottom: 32px; max-width: 48ch; margin-left: auto; margin-right: auto; }
+
+/* ---------- Footer ---------- */
+footer {
+  border-top: 1px solid var(--border-default);
+  padding: 64px 0 32px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.footer-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 0;
+  text-align: center;
+}
+@media (min-width: 1024px) {
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 48px;
+    align-items: center;
+    text-align: left;
+  }
+}
+.footer-brand { font-size: 14px; color: var(--text-secondary); letter-spacing: 0.02em; }
+.footer-brand strong {
+  font-family: 'Söhne', 'Inter', sans-serif;
+  color: var(--text-primary);
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  font-size: 15px;
+}
+.footer-brand .sep { color: var(--text-tertiary); margin: 0 8px; }
+.footer-col strong { color: var(--text-primary); display: block; margin-bottom: 8px; font-weight: 500; }
+.footer-col a { color: var(--text-secondary); text-decoration: none; }
+.footer-col a:hover { text-decoration: underline; }
+
+.footer-social {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+}
+@media (min-width: 1024px) {
+  .footer-social { justify-content: flex-end; }
+}
+.footer-social a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  transition: background 200ms ease-out, color 200ms ease-out;
+}
+@media (hover: hover) and (pointer: fine) {
+  .footer-social a:hover { background: var(--text-primary); color: var(--bg-primary); border-color: var(--text-primary); }
+}
+.footer-social svg { width: 18px; height: 18px; }
+
+.footer-bottom-line {
+  padding-top: 32px;
+  border-top: 1px solid var(--border-default);
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+.footer-bottom-line strong { color: var(--text-primary); font-weight: 500; }
+.footer-bottom-line .sep { color: var(--text-tertiary); margin: 0 12px; }
+
+/* ---------- Reveal on scroll — GSAP maneja la animación ---------- */
+.reveal { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* La spec pide REDUCIR movimiento, no eliminar feedback.
+     Mantenemos fade/color (no son movimiento) y bloqueamos transforms y scroll smoothing. */
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-property: opacity, color, background-color, border-color !important;
+    transition-duration: 150ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal { opacity: 1 !important; transform: none !important; }
+  #cursor-dot, #cursor-ring { display: none !important; }
+  .mobile-menu {
+    transition: none !important;
+  }
+  .hamburger span {
+    transition: none !important;
+  }
+}
+
+/* ── Custom cursor (solo desktop con puntero fino) ─────────── */
+#cursor-dot, #cursor-ring { display: none; }
+
+/* ── Word-split hero animation ─────────────────────────────── */
+.word-wrap {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  line-height: 1.05;
+}
+.word { display: inline-block; will-change: transform; }
+
+/* ── View Transitions API ───────────────────────────────────── */
+@keyframes vt-out {
+  to { opacity: 0; transform: translateY(-10px); }
+}
+@keyframes vt-in {
+  from { opacity: 0; transform: translateY(10px); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) { animation: 180ms ease-in both vt-out; }
+  ::view-transition-new(root) { animation: 260ms ease-out both vt-in; }
+  ::view-transition-old(site-header),
+  ::view-transition-new(site-header) { animation: none; }
+}
+header { view-transition-name: site-header; }
+
+/* ── Project card hover mejorado ────────────────────────────── */
+.project-card .photo-placeholder {
+  transition: transform 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+@media (hover: hover) and (pointer: fine) {
+  .project-card:hover .photo-placeholder { transform: scale(1.05); }
+}
+
+/* ── Grain overlay sutil ─────────────────────────────────────── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 8888;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+/* ---------- Prototype banner ---------- */
+.proto-banner {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  padding: 8px 16px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  z-index: 200;
+  font-weight: 500;
+  opacity: 0.7;
+}
+.proto-banner:hover { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div id="cursor-dot" aria-hidden="true"></div>
+<div id="cursor-ring" aria-hidden="true"></div>
+
+<header id="site-header">
+  <div class="container">
+    <div class="header-inner">
+      <button class="hamburger" aria-label="Menú" id="hamburger-btn">
+        <span></span><span></span><span></span>
+      </button>
+      <button class="logo" data-page="home"><span class="brand">rødën</span></button>
+      <ul class="nav-desktop">
+        <li><button class="nav-link" data-page="proyectos">Proyectos</button></li>
+        <li><button class="nav-link" data-page="estudio">Estudio</button></li>
+        <li><button class="nav-link" data-page="inspiracion">Inspiración</button></li>
+        <li><button class="nav-link" data-page="proceso">Proceso</button></li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<a class="wa-float" href="https://wa.me/5491145047893?text=Hola%20Gustavo%2C%20tengo%20una%20consulta%20sobre%20r%C3%B8d%C3%ABn." aria-label="Conversemos por WhatsApp" target="_blank" rel="noopener">
+  <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+</a>
+
+<nav class="mobile-menu" id="mobile-menu">
+  <button class="nav-link" data-page="proyectos">Proyectos</button>
+  <button class="nav-link" data-page="estudio">Estudio</button>
+  <button class="nav-link" data-page="inspiracion">Inspiración</button>
+  <button class="nav-link" data-page="proceso">Proceso</button>
+</nav>
+
+<main id="main">
+
+<!-- ============ HOME ============ -->
+<section class="page active" id="page-home">
+
+  <div class="hero">
+    <div class="hero-slides" id="hero-slides">
+      <div class="hero-slide kb-1 active" style="background-image: url('Renders/ChatGPT%20Image%204%20may%202026%2C%2011_03_52%20a.m..png');"></div>
+      <div class="hero-slide" style="background-image: url('Fotos%20de%20proyectos/foto%205.png');"></div>
+      <div class="hero-slide" style="background-image: url('Fotos%20de%20proyectos/foto%201.png');"></div>
+      <div class="hero-slide" style="background-image: url('Fotos%20de%20proyectos/foto%202.png');"></div>
+      <div class="hero-gradient"></div>
+    </div>
+    <div class="hero-scroll-hint" aria-hidden="true">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 3v14M4 11l6 6 6-6" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="hero-content">
+      <h1 class="t-display reveal">Estudio taller de equipamiento integral diseñado y fabricado por un arquitecto.</h1>
+      <p class="t-body-l hero-sub reveal">Relevamiento en tu casa. Diseño desde cero. Fabricación y supervisión de obra a cargo del mismo arquitecto.</p>
+      <div class="hero-ctas reveal">
+        <button class="btn btn-primary" data-page="proceso">Agendá un relevamiento</button>
+        <button class="btn btn-ghost" data-page="estudio">Conocer el estudio</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="section tres-puntos">
+    <div class="container">
+      <div class="section-header reveal">
+        <h2 class="t-h2">Cómo empieza tu proyecto.</h2>
+        <p class="section-intro t-body-l">Hay tres formas de partir.</p>
+      </div>
+
+      <div class="puntos-list">
+        <div class="punto reveal">
+          <div class="punto-num">01</div>
+          <div class="punto-body">
+            <h3>Desde cero</h3>
+            <p>Definís qué necesitás. Lo diseñamos, fabricamos e instalamos.</p>
+          </div>
+        </div>
+        <div class="punto reveal">
+          <div class="punto-num">02</div>
+          <div class="punto-body">
+            <h3>Desde una idea tuya</h3>
+            <p>Traés una imagen, un plano o una referencia. La desarrollamos.</p>
+          </div>
+        </div>
+        <div class="punto reveal">
+          <div class="punto-num">03</div>
+          <div class="punto-body">
+            <h3>Desde un diseño <span class="brand">rødën</span></h3>
+            <p>Elegís uno de nuestros diseños como base. Lo adaptamos a tu espacio.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="tres-puntos-cta reveal">
+        <button class="link-arrow" data-page="inspiracion">Ver diseños <span class="brand">rødën</span> →</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-header reveal">
+        <h2 class="t-h2">Proyectos seleccionados</h2>
+        <p class="section-intro t-body-l">Equipamientos integrales y ambientes específicos diseñados y fabricados por <span class="brand">rødën</span>.</p>
+      </div>
+
+      <div class="project-grid">
+        <article class="project-card reveal">
+          <div class="photo-placeholder has-photo" style="background-image: url('Fotos%20de%20proyectos/foto%201.png');">Foto 4:3</div>
+          <div class="label-line">Equipamiento integral · 2025</div>
+          <h3>Departamento en Belgrano</h3>
+          <p class="project-desc">Cocina, vestidor, biblioteca y dormitorios.</p>
+          <button class="link-arrow">Ver proyecto →</button>
+        </article>
+        <article class="project-card reveal">
+          <div class="photo-placeholder has-photo" style="background-image: url('Fotos%20de%20proyectos/foto%202.png');">Foto 4:3</div>
+          <div class="label-line">Ambiente completo · 2025</div>
+          <h3>Cocina en Palermo</h3>
+          <p class="project-desc">Diseño, fabricación e instalación integral.</p>
+          <button class="link-arrow">Ver proyecto →</button>
+        </article>
+        <article class="project-card reveal">
+          <div class="photo-placeholder has-photo" style="background-image: url('Fotos%20de%20proyectos/foto%203.png');">Foto 4:3</div>
+          <div class="label-line">Equipamiento integral · 2024</div>
+          <h3>Casa en Pilar</h3>
+          <p class="project-desc">Equipamiento completo de planta baja y dormitorios.</p>
+          <button class="link-arrow">Ver proyecto →</button>
+        </article>
+        <article class="project-card reveal">
+          <div class="photo-placeholder has-photo" style="background-image: url('Fotos%20de%20proyectos/foto%204.png');">Foto 4:3</div>
+          <div class="label-line">Ambiente completo · 2024</div>
+          <h3>Vestidor en Recoleta</h3>
+          <p class="project-desc">Walk-in vestidor con isla central y zona maquillaje.</p>
+          <button class="link-arrow">Ver proyecto →</button>
+        </article>
+        <article class="project-card reveal">
+          <div class="photo-placeholder has-photo" style="background-image: url('Fotos%20de%20proyectos/foto%205.png');">Foto 4:3</div>
+          <div class="label-line">Pieza puntual · 2024</div>
+          <h3>Biblioteca con TV integrada</h3>
+          <p class="project-desc">Pieza única con resolución de cableado oculto.</p>
+          <button class="link-arrow">Ver proyecto →</button>
+        </article>
+        <article class="project-card reveal">
+          <div class="photo-placeholder has-photo" style="background-image: url('Fotos%20de%20proyectos/foto%206.png');">Foto 4:3</div>
+          <div class="label-line">Equipamiento integral · 2023</div>
+          <h3>PH en Villa Crespo</h3>
+          <p class="project-desc">Reforma integral con equipamiento completo a medida.</p>
+          <button class="link-arrow">Ver proyecto →</button>
+        </article>
+      </div>
+
+      <div class="reveal" style="text-align: center;">
+        <button class="link-arrow" data-page="proyectos">Ver todos los proyectos →</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background: var(--bg-elevated); border-top: 1px solid var(--border-default); border-bottom: 1px solid var(--border-default);">
+    <div class="container">
+      <div class="section-header reveal">
+        <h2 class="t-h2">Sistema <span class="brand">rødën</span></h2>
+        <p class="section-intro t-body-l">Un método de trabajo en cinco módulos para que lo que se proyecta coincida con lo que se fabrica e instala.</p>
+      </div>
+
+      <div class="sistema-modules">
+        <div class="sistema-module reveal">
+          <span class="num">01</span>
+          <h3>Diagnóstico en contexto real</h3>
+          <p>Evita errores de medida y diseños mal adaptados al uso real.</p>
+        </div>
+        <div class="sistema-module reveal">
+          <span class="num">02</span>
+          <h3>Diseño validado antes de fabricar</h3>
+          <p>Evita cambios en obra y diferencias entre render y resultado.</p>
+        </div>
+        <div class="sistema-module reveal">
+          <span class="num">03</span>
+          <h3>Documentación técnica ejecutable</h3>
+          <p>Evita interpretaciones ambiguas y errores de ejecución.</p>
+        </div>
+        <div class="sistema-module reveal">
+          <span class="num">04</span>
+          <h3>Fabricación controlada</h3>
+          <p>Evita pérdida de calidad y dilución de responsabilidad.</p>
+        </div>
+        <div class="sistema-module reveal">
+          <span class="num">05</span>
+          <h3>Instalación y cierre de obra</h3>
+          <p>Evita terminaciones deficientes y proyectos que quedan abiertos.</p>
+        </div>
+      </div>
+
+      <div class="reveal">
+        <button class="link-arrow" data-page="proceso">Ver el sistema completo →</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-header reveal">
+        <h2 class="t-h2">Lo que dicen</h2>
+      </div>
+
+      <div class="quotes-grid">
+        <figure class="quote-card reveal">
+          <blockquote>
+            <span class="open-q">❝</span> Los productos finales eran idénticos a los renders del proyecto. <span class="close-q">❞</span>
+          </blockquote>
+          <cite>— Gaby Leotta</cite>
+        </figure>
+        <figure class="quote-card reveal">
+          <blockquote>
+            <span class="open-q">❝</span> Tal cual lo habíamos pactado desde el comienzo. <span class="close-q">❞</span>
+          </blockquote>
+          <cite>— Andrea Mariana Giao</cite>
+        </figure>
+        <figure class="quote-card reveal">
+          <blockquote>
+            <span class="open-q">❝</span> Nos hicieron el mueble del living y a los dos años los llamamos para terminar nuestra cocina. Siempre entendiendo lo que queremos. <span class="close-q">❞</span>
+          </blockquote>
+          <cite>— Gladys Nuñez</cite>
+        </figure>
+      </div>
+
+      <div class="reveal" style="margin-top: 48px;">
+        <a class="link-arrow" href="https://www.google.com/maps/place/r%C3%B8d%C3%ABn/@-34.6050938,-58.5157952,17z/data=!3m1!4b1!4m6!3m5!1s0x95bcb7ca8b6a0e19:0xf64432c90e1f8f4e!8m2!3d-34.6050939!4d-58.5111818!16s%2Fg%2F11c6tlh7jh" target="_blank" rel="noopener">Ver todas las reseñas en Google →</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-block">
+    <div class="container">
+      <h2 class="t-h2 reveal">Iniciemos un proyecto.</h2>
+      <p class="reveal" style="margin-top: 16px;">Elegí el tipo de proyecto que estás evaluando.<br>Te conectamos con el arquitecto por WhatsApp.</p>
+
+      <div class="wa-triple reveal">
+        <a class="btn btn-primary" target="_blank" rel="noopener" href="https://wa.me/5491145047893?text=Hola%20Gustavo.%20Estoy%20evaluando%20un%20proyecto%20integral%20%E2%80%94equipamiento%20completo%20de%20un%20departamento%20o%20casa%E2%80%94%20con%20r%C3%B8d%C3%ABn%20y%20me%20gustar%C3%ADa%20conversar.">
+          Iniciar un proyecto integral <span class="arrow">→ WhatsApp</span>
+        </a>
+        <a class="btn btn-primary" target="_blank" rel="noopener" href="https://wa.me/5491145047893?text=Hola%20Gustavo.%20Estoy%20evaluando%20un%20ambiente%20completo%20%28cocina%2C%20vestidor%2C%20biblioteca%20o%20similar%29%20con%20r%C3%B8d%C3%ABn%20y%20me%20gustar%C3%ADa%20conversar.">
+          Consultar por un ambiente completo <span class="arrow">→ WhatsApp</span>
+        </a>
+        <a class="btn btn-primary" target="_blank" rel="noopener" href="https://wa.me/5491145047893?text=Hola%20Gustavo.%20Tengo%20una%20consulta%20sobre%20una%20pieza%20puntual%20con%20r%C3%B8d%C3%ABn%20y%20me%20gustar%C3%ADa%20conversar.">
+          Consulta sobre un mueble puntual <span class="arrow">→ WhatsApp</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+</section>
+
+<!-- ============ ESTUDIO ============ -->
+<section class="page" id="page-estudio">
+
+  <section class="section apertura-estudio">
+    <div class="container">
+      <h1 class="t-h1 reveal">Estudio</h1>
+      <p class="frase-grande reveal">Un arquitecto detrás de cada proyecto.</p>
+      <p class="frase-aclar reveal">El mismo arquitecto que releva tu casa diseña, fabrica y supervisa la instalación.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="bio-block">
+        <div class="bio-photo has-photo reveal" style="background-image: url('Foto%20personal/WhatsApp%20Image%202026-05-04%20at%2016.10.09.jpeg');">Foto editorial del arquitecto</div>
+        <div class="bio-text reveal">
+          <h3>Gustavo Polack</h3>
+          <p class="cargo">Arquitecto, fundador de <span class="brand">rødën</span></p>
+          <p>Se recibió de arquitecto en la Universidad de Buenos Aires. Suma 25 años de experiencia profesional, los primeros en estudios de arquitectura, donde adoptó una metodología de seguimiento extremo a extremo: relevamiento, proyecto, dirección de obra, entrega y servicio post-venta.</p>
+          <p>En enero de 2014 fundó <span class="brand">rødën</span> para aplicar esa misma metodología al equipamiento de interiores. La hipótesis era simple: si un proyecto arquitectónico se beneficia de tener una sola figura responsable desde la primera medida hasta el cierre de obra, el equipamiento a medida también.</p>
+          <p>Hoy <span class="brand">rødën</span> es un equipo de ocho personas. Cada proyecto sigue siendo dirigido por el arquitecto que lo releva. El cliente trata directamente con él durante todo el proyecto, y también frente a cualquier reclamo posterior a la entrega.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section servicio-block" style="border-top: 1px solid var(--border-default);">
+    <div class="container">
+      <div class="section-header reveal">
+        <h2 class="t-h2">El servicio</h2>
+      </div>
+      <p class="frase-fuerte reveal">Como una sastrería a domicilio.</p>
+      <p class="pasos reveal">Vamos a tu casa. Tomamos las medidas. Diseñamos desde cero. Fabricamos en nuestro taller. Instalamos en tu espacio.</p>
+      <p class="pasos reveal" style="margin-top: 24px;">Cuando un mueble lo requiere, resolvemos también su instalación eléctrica y la iluminación. Incorporamos tapicería, herrería, y trabajos en mármol, granito, acero inoxidable y vidrio según lo pida el proyecto.</p>
+      <p class="frase-cierre reveal">Vos definís qué querés. <span class="brand">rødën</span> resuelve cómo.</p>
+    </div>
+  </section>
+
+  <section class="section" style="border-top: 1px solid var(--border-default);">
+    <div class="container">
+      <div class="section-header reveal">
+        <h2 class="t-h2">El taller</h2>
+      </div>
+      <div class="taller-photo has-photo reveal" style="background-image: url('Fotos%20taller/R%C3%B8d%C3%ABn%20(19).jpg');">Foto del taller — momento real</div>
+      <p class="taller-text reveal" style="font-size: 18px; line-height: 1.55;">La fabricación está a cargo del equipo del taller, en nuestras propias instalaciones. El proceso lo dirige el arquitecto que firma el proyecto.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-header reveal">
+        <h2 class="t-h2">Lo que <span class="brand">rødën</span> es y lo que no es.</h2>
+      </div>
+      <div class="es-no-es">
+        <div class="reveal">
+          <h3>Es</h3>
+          <ul>
+            <li class="es-line">Un estudio taller que diseña y fabrica con metodología arquitectónica.</li>
+            <li class="es-line">Equipamiento integral a medida, desde cero.</li>
+            <li class="es-line">Una sola persona responsable de todo el proyecto.</li>
+          </ul>
+        </div>
+        <div class="reveal">
+          <h3>No es</h3>
+          <ul>
+            <li class="no-line">Una carpintería tradicional.</li>
+            <li class="no-line">Una empresa de amoblamientos industriales o de catálogo.</li>
+            <li class="no-line">Una marca de muebles pre-fabricados.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-block">
+    <div class="container">
+      <h2 class="t-h2 reveal">Iniciemos un proyecto.</h2>
+      <div class="reveal" style="margin-top: 32px;">
+        <a class="btn btn-primary" target="_blank" rel="noopener" href="https://wa.me/5491145047893?text=Hola%20Gustavo%2C%20me%20gustar%C3%ADa%20conversar%20sobre%20un%20proyecto%20con%20r%C3%B8d%C3%ABn.">Conversemos por WhatsApp</a>
+      </div>
+    </div>
+  </section>
+
+</section>
+
+<!-- ============ PROCESO ============ -->
+<section class="page" id="page-proceso">
+
+  <section class="section apertura-proceso">
+    <div class="container">
+      <h1 class="t-h1 reveal">Sistema <span class="brand">rødën</span></h1>
+      <p class="subtitulo reveal">Un método de trabajo construido para que lo que se proyecta coincida con lo que se fabrica e instala, sin desvíos en calidad, tiempos ni ejecución.</p>
+      <div class="frase-clave-card reveal">
+        Cada módulo del sistema existe para evitar un tipo específico de error.
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="modules-list" id="modules-list">
+
+        <div class="module-item">
+          <div class="module-num">01</div>
+          <div class="module-body">
+            <h3>Diagnóstico en contexto real</h3>
+            <p class="module-evita">Evita errores de medida y diseños mal adaptados al uso real.</p>
+            <div class="module-detail">
+              <div class="module-detail-inner">
+                <div class="grupo">
+                  <div class="grupo-label">Qué se hace</div>
+                  <p>Relevamiento en el lugar, medición precisa y comprensión del uso real del espacio.</p>
+                </div>
+                <div class="grupo">
+                  <div class="grupo-label">Qué evita</div>
+                  <p>Diseños que no responden al uso real, errores de medida y soluciones genéricas mal adaptadas.</p>
+                </div>
+                <div class="grupo">
+                  <div class="grupo-label">Qué se define</div>
+                  <p>Condiciones físicas reales, necesidades funcionales —incluso las que el cliente no declara—, limitaciones técnicas.</p>
+                </div>
+                <div class="grupo">
+                  <div class="grupo-label">Valor</div>
+                  <p>El proyecto arranca con información real, no con supuestos.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="module-toggle">+</div>
+        </div>
+
+        <div class="module-item">
+          <div class="module-num">02</div>
+          <div class="module-body">
+            <h3>Diseño validado antes de fabricar</h3>
+            <p class="module-evita">Evita cambios en obra y diferencias entre render y resultado.</p>
+            <div class="module-detail">
+              <div class="module-detail-inner">
+                <div class="grupo">
+                  <div class="grupo-label">Qué se hace</div>
+                  <p>Desarrollo del proyecto desde cero, ajustes iterativos y validación con el cliente. Definición completa antes de pasar a producción.</p>
+                </div>
+                <div class="grupo">
+                  <div class="grupo-label">Qué evita</div>
+                  <p>Cambios en obra, decisiones improvisadas y diferencias entre render y resultado.</p>
+                </div>
+                <div class="grupo">
+                  <div class="grupo-label">Qué se define</div>
+                  <p>Geometría exacta, materiales, terminaciones y resoluciones constructivas.</p>
+                </div>
+                <div class="grupo">
+                  <div class="grupo-label">Valor</div>
+                  <div class="valor-destacado">Nada se fabrica sin estar completamente definido.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="module-toggle">+</div>
+        </div>
+
+        <div class="module-item">
+          <div class="module-num">03</div>
+          <div class="module-body">
+            <h3>Documentación técnica ejecutable</h3>
+            <p class="module-evita">Evita interpretaciones ambiguas y errores de ejecución.</p>
+            <div class="module-detail">
+              <div class="module-detail-inner">
+                <div class="grupo">
+                  <div class="grupo-label">Qué se hace</div>
+                  <p>Transformación del diseño en información técnica precisa para fabricación.</p>
+                </div>
+                <div class="grupo">
+                  <div class="grupo-label">Qué evita</div>
+                  <p>Interpretaciones ambiguas, errores de ejecución y dependencia del oficio sin control.</p>
+                </div>
+                <div class="grupo">
+                  <div class="grupo-label">Qué se define</div>
+                  <p>Planos técnicos, despiece y especificaciones de materiales y herrajes.</p>
+                </div>
+                <div class="grupo">
+                  <div class="grupo-label">Valor</div>
+                  <p>El proyecto deja de ser una idea y pasa a ser ejecutable sin margen de interpretación.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="module-toggle">+</div>
+        </div>
+
+        <div class="module-item">
+          <div class="module-num">04</div>
+          <div class="module-body">
+            <h3>Fabricación controlada</h3>
+            <p class="module-evita">Evita pérdida de calidad y dilución de responsabilidad.</p>
+            <div class="module-detail">
+              <div class="module-detail-inner">
+                <div class="grupo">
+                  <div class="grupo-label">Qué se hace</div>
+                  <p>Producción del mobiliario en el taller propio, bajo supervisión directa.</p>
+                </div>
+                <div class="grupo">
+                  <div class="grupo-label">Qué evita</div>
+                  <p>Pérdida de calidad en producción, desvíos respecto al diseño y dilución de responsabilidad por delegación.</p>
+                </div>
+                <div class="grupo">
+                  <div class="grupo-label">Qué se controla</div>
+                  <p>Calidad de materiales, precisión constructiva y coherencia con el proyecto firmado.</p>
+                </div>
+                <div class="grupo">
+                  <div class="grupo-label">Valor</div>
+                  <p>Control directo de la producción, sin intermediarios entre el diseño y la fabricación.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="module-toggle">+</div>
+        </div>
+
+        <div class="module-item">
+          <div class="module-num">05</div>
+          <div class="module-body">
+            <h3>Instalación y cierre de obra</h3>
+            <p class="module-evita">Evita terminaciones deficientes y proyectos que quedan abiertos.</p>
+            <div class="module-detail">
+              <div class="module-detail-inner">
+                <div class="grupo">
+                  <div class="grupo-label">Qué se hace</div>
+                  <p>Instalación en obra y ajuste final en sitio.</p>
+                </div>
+                <div class="grupo">
+                  <div class="grupo-label">Qué evita</div>
+                  <p>Terminaciones deficientes, problemas de encastre y proyectos que quedan abiertos sin cierre formal.</p>
+                </div>
+                <div class="grupo">
+                  <div class="grupo-label">Qué se garantiza</div>
+                  <p>Ajuste real en el espacio, terminación acorde al diseño y cierre completo del proyecto.</p>
+                </div>
+                <div class="grupo">
+                  <div class="grupo-label">Valor</div>
+                  <p>El proyecto no se da por terminado hasta que el equipamiento funciona como fue proyectado.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="module-toggle">+</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="responsabilidad">
+    <div class="container">
+      <h2 class="t-h2 reveal">Responsabilidad unificada</h2>
+      <p class="reveal">Todo el proceso —desde el relevamiento hasta la instalación— está dirigido por el mismo arquitecto.</p>
+      <p class="reveal">Esto elimina uno de los principales problemas del rubro: la fragmentación de responsabilidades.</p>
+      <p class="reveal" style="color: var(--text-primary);">En <span class="brand">rødën</span> no hay diseñador por un lado, fabricante por otro, instalador por otro. Hay una única línea de decisión y control.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-header reveal">
+        <h2 class="t-h2">Lo que dicen</h2>
+      </div>
+
+      <div class="quotes-grid">
+        <figure class="quote-card reveal">
+          <blockquote><span class="open-q">❝</span> Los productos finales eran idénticos a los renders del proyecto. <span class="close-q">❞</span></blockquote>
+          <cite>— Gaby Leotta</cite>
+        </figure>
+        <figure class="quote-card reveal">
+          <blockquote><span class="open-q">❝</span> Tal cual lo habíamos pactado desde el comienzo. <span class="close-q">❞</span></blockquote>
+          <cite>— Andrea Mariana Giao</cite>
+        </figure>
+        <figure class="quote-card reveal">
+          <blockquote><span class="open-q">❝</span> Nos hicieron el mueble del living y a los dos años los llamamos para terminar nuestra cocina. Siempre entendiendo lo que queremos. <span class="close-q">❞</span></blockquote>
+          <cite>— Gladys Nuñez</cite>
+        </figure>
+      </div>
+
+      <p class="quotes-cierre reveal">Esto no es casualidad. Es consecuencia directa del sistema de trabajo.</p>
+
+      <div class="quotes-cta reveal">
+        <a class="link-arrow" href="https://www.google.com/maps/place/r%C3%B8d%C3%ABn/@-34.6050938,-58.5157952,17z/data=!3m1!4b1!4m6!3m5!1s0x95bcb7ca8b6a0e19:0xf64432c90e1f8f4e!8m2!3d-34.6050939!4d-58.5111818!16s%2Fg%2F11c6tlh7jh" target="_blank" rel="noopener">Ver todas las reseñas en Google →</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section filtro-block">
+    <div class="container">
+      <p class="filtro-q reveal">¿Este sistema es para vos?</p>
+      <div class="filtro-cols">
+        <div class="reveal">
+          <h3>Es para vos si:</h3>
+          <ul style="list-style: none;">
+            <li class="es-line" style="margin-bottom: 12px;">Querés resolver el proyecto completo, no partes sueltas.</li>
+            <li class="es-line" style="margin-bottom: 12px;">Valorás el proceso tanto como el resultado.</li>
+            <li class="es-line">Buscás previsibilidad en tiempos, calidad y ejecución.</li>
+          </ul>
+        </div>
+        <div class="reveal">
+          <h3>No es para vos si:</h3>
+          <ul style="list-style: none;">
+            <li class="no-line" style="margin-bottom: 12px;">Tu prioridad es el precio por sobre el proceso.</li>
+            <li class="no-line" style="margin-bottom: 12px;">Necesitás una solución rápida sin definición previa.</li>
+            <li class="no-line">Buscás muebles estándar o de catálogo.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-block-extended">
+    <div class="container">
+      <h2 class="t-h2 reveal">Iniciemos un proyecto</h2>
+      <p class="descripcion reveal">Primera conversación: definimos juntos si tu proyecto es viable y cómo abordarlo correctamente desde el inicio.</p>
+
+      <p class="empezar-modulo reveal">Empezá por el Módulo 1 — el relevamiento — eligiendo el tipo de proyecto que estás evaluando:</p>
+
+      <div class="wa-triple reveal">
+        <a class="btn btn-primary" target="_blank" rel="noopener" href="https://wa.me/5491145047893?text=Hola%20Gustavo.%20Estoy%20evaluando%20un%20proyecto%20integral%20%E2%80%94equipamiento%20completo%20de%20un%20departamento%20o%20casa%E2%80%94%20con%20r%C3%B8d%C3%ABn%20y%20me%20gustar%C3%ADa%20conversar.">
+          Iniciar un proyecto integral <span class="arrow">→ WhatsApp</span>
+        </a>
+        <a class="btn btn-primary" target="_blank" rel="noopener" href="https://wa.me/5491145047893?text=Hola%20Gustavo.%20Estoy%20evaluando%20un%20ambiente%20completo%20%28cocina%2C%20vestidor%2C%20biblioteca%20o%20similar%29%20con%20r%C3%B8d%C3%ABn%20y%20me%20gustar%C3%ADa%20conversar.">
+          Consultar por un ambiente completo <span class="arrow">→ WhatsApp</span>
+        </a>
+        <a class="btn btn-primary" target="_blank" rel="noopener" href="https://wa.me/5491145047893?text=Hola%20Gustavo.%20Tengo%20una%20consulta%20sobre%20una%20pieza%20puntual%20con%20r%C3%B8d%C3%ABn%20y%20me%20gustar%C3%ADa%20conversar.">
+          Consulta sobre un mueble puntual <span class="arrow">→ WhatsApp</span>
+        </a>
+      </div>
+
+      <p class="timing reveal">A partir del relevamiento, en pocos días recibís la propuesta del proyecto.</p>
+    </div>
+  </section>
+
+</section>
+
+<!-- ============ PROYECTOS (listing) ============ -->
+<section class="page" id="page-proyectos">
+
+  <section class="section proyectos-apertura">
+    <div class="container">
+      <h1 class="t-h1 reveal">Proyectos</h1>
+      <p class="frase-1 reveal">Casos del Sistema <span class="brand">rødën</span> aplicado.</p>
+      <p class="frase-2 reveal">Cada proyecto es único. El método es el mismo.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="proyectos-list" id="proyectos-grid">
+        <!-- Proyectos cargados dinámicamente desde Supabase -->
+        <div id="proyectos-loading" style="grid-column:1/-1;padding:80px 0;text-align:center;color:#999;font-size:14px;letter-spacing:0.06em;text-transform:uppercase;">
+          Cargando proyectos…
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-block">
+    <div class="container">
+      <h2 class="t-h2 reveal">Iniciemos un proyecto.</h2>
+      <div class="reveal" style="margin-top: 32px;">
+        <a class="btn btn-primary" target="_blank" rel="noopener" href="https://wa.me/5491145047893?text=Hola%20Gustavo%2C%20me%20gustar%C3%ADa%20conversar%20sobre%20un%20proyecto%20con%20r%C3%B8d%C3%ABn.">Conversemos por WhatsApp</a>
+      </div>
+    </div>
+  </section>
+
+</section>
+
+<!-- ============ PROYECTO DETALLE (ejemplo: Departamento en Belgrano) ============ -->
+<section class="page" id="page-proyecto-detalle">
+  <div class="proyecto-detalle">
+    <div class="container">
+
+      <div class="breadcrumb reveal">
+        <button data-page="proyectos">← Volver a Proyectos</button>
+      </div>
+
+      <div class="proyecto-header reveal">
+        <div class="label-line">Equipamiento integral · 2025</div>
+        <h1>Departamento en Belgrano</h1>
+      </div>
+
+      <div class="proyecto-foto-principal reveal" style="background-image: url('Fotos%20de%20proyectos/foto%201.png');"></div>
+
+      <div class="proyecto-narrativa">
+        <div class="proyecto-narrativa-texto reveal">
+          <h2>El proyecto</h2>
+          <p>El cliente buscaba un equipamiento completo para su nuevo departamento en Belgrano, con espacios definidos para vivir, trabajar y leer, y un lenguaje material coherente entre ambientes.</p>
+          <p>Aplicamos el Sistema <span class="brand">rødën</span> desde el primer día: relevamiento en obra para entender el uso real del espacio, diseño con validación iterativa antes de fabricar, documentación técnica precisa, fabricación en taller propio y supervisión directa de toda la instalación.</p>
+          <p>El resultado es un conjunto de muebles integrados —cocina, vestidor, biblioteca y dos dormitorios— que comparten materiales y proporciones, fabricados sin sub-contrataciones, entregados en los tiempos comprometidos.</p>
+        </div>
+
+        <dl class="proyecto-datos reveal">
+          <dt>Tipo</dt>
+          <dd>Equipamiento integral</dd>
+          <dt>Ubicación</dt>
+          <dd>Belgrano, CABA</dd>
+          <dt>Año</dt>
+          <dd>2025</dd>
+          <dt>Alcance</dt>
+          <dd>Cocina, vestidor, biblioteca, 2 dormitorios</dd>
+          <dt>Tiempo</dt>
+          <dd>4 meses, desde relevamiento hasta entrega</dd>
+        </dl>
+      </div>
+
+      <div class="proyecto-galeria">
+        <div class="galeria-item reveal" style="background-image: url('Fotos%20de%20proyectos/foto%202.png');"></div>
+        <div class="galeria-item reveal" style="background-image: url('Fotos%20de%20proyectos/foto%203.png');"></div>
+        <div class="galeria-item reveal" style="background-image: url('Fotos%20de%20proyectos/foto%204.png');"></div>
+        <div class="galeria-item reveal" style="background-image: url('Fotos%20de%20proyectos/foto%205.png');"></div>
+      </div>
+
+    </div>
+
+    <div class="proyecto-cta">
+      <div class="container">
+        <h2 class="t-h2 reveal">Iniciemos un proyecto similar.</h2>
+        <div class="reveal" style="margin-top: 32px;">
+          <a class="btn btn-primary" target="_blank" rel="noopener" href="https://wa.me/5491145047893?text=Hola%20Gustavo.%20Vi%20el%20proyecto%20Departamento%20en%20Belgrano%20y%20me%20gustar%C3%ADa%20conversar%20sobre%20algo%20similar.">Conversemos por WhatsApp</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ INSPIRACIÓN ============ -->
+<section class="page" id="page-inspiracion">
+
+  <section class="section inspiracion-apertura">
+    <div class="container">
+      <h1 class="t-h1 reveal">Inspiración</h1>
+      <p class="frame reveal">Biblioteca de diseños propios. Cada uno funciona como punto de partida. Lo adaptamos a tu espacio.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="inspiracion-list" id="inspiracion-list">
+        <!-- Generado dinámicamente por JS: 8 random de un repositorio de 24 -->
+      </div>
+    </div>
+  </section>
+
+  <section class="inspiracion-cta-final">
+    <div class="container">
+      <p class="pregunta reveal">¿No encontraste lo que buscás?</p>
+      <p class="invitacion reveal">Empezá tu proyecto desde cero.</p>
+      <div class="reveal">
+        <a class="btn btn-primary" target="_blank" rel="noopener" href="https://wa.me/5491145047893?text=Hola%20Gustavo.%20Mir%C3%A9%20la%20p%C3%A1gina%20de%20Inspiraci%C3%B3n%20y%20me%20gustar%C3%ADa%20empezar%20un%20proyecto%20desde%20cero.">Conversemos por WhatsApp</a>
+      </div>
+    </div>
+  </section>
+
+</section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col footer-brand"><strong><span class="brand">rødën</span></strong><span class="sep">·</span>Estudio taller de equipamiento integral</div>
+      <div class="footer-col">
+        <strong>Buenos Aires <span style="color: var(--text-tertiary);">|</span> Argentina</strong>
+      </div>
+      <div class="footer-col footer-social">
+        <a href="https://www.instagram.com/muebles.roden/" target="_blank" rel="noopener" aria-label="Instagram — @muebles.roden">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="4"/>
+            <circle cx="12" cy="12" r="4"/>
+            <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/>
+          </svg>
+        </a>
+        <a href="https://www.facebook.com/muebles.roden/" target="_blank" rel="noopener" aria-label="Facebook — @muebles.roden">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+          </svg>
+        </a>
+        <a href="https://www.google.com/maps/place/r%C3%B8d%C3%ABn/@-34.6050938,-58.5157952,17z/data=!3m1!4b1!4m6!3m5!1s0x95bcb7ca8b6a0e19:0xf64432c90e1f8f4e!8m2!3d-34.6050939!4d-58.5111818!16s%2Fg%2F11c6tlh7jh" target="_blank" rel="noopener" aria-label="Ubicación en Google Maps">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="proto-banner">Prototipo · estructura</div>
+
+<script>
+(function () {
+
+  // ── GSAP + ScrollTrigger ─────────────────────────────────────
+  gsap.registerPlugin(ScrollTrigger);
+
+  // ── Supabase (repositorio de proyectos) ──────────────────────
+  const SB_URL = 'https://otbdtfncwgubjjxsljux.supabase.co';
+  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90YmR0Zm5jd2d1YmpqeHNsanV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2ODU4NjgsImV4cCI6MjA5NDI2MTg2OH0.lz0sEKYo1fAA_z0hDnHM88nrCnWEouaFZtE3xKiPO50';
+  const sb = supabase.createClient(SB_URL, SB_KEY);
+
+  // ── Lenis smooth scroll ──────────────────────────────────────
+  // En touch (móvil/tablet): desactivar smoothWheel para ceder el scroll al browser nativo.
+  // matchMedia pointer:coarse detecta pantallas táctiles sin mouse de precisión.
+  const isTouch = window.matchMedia('(pointer: coarse)').matches;
+  const lenis = new Lenis({
+    lerp:        isTouch ? 0 : 0.10,
+    smoothWheel: !isTouch,
+    smoothTouch: false,   // Nunca smooth en touch (Lenis default, pero explícito)
+  });
+  lenis.on('scroll', ScrollTrigger.update);
+  gsap.ticker.add((time) => lenis.raf(time * 1000));
+  gsap.ticker.lagSmoothing(0);
+
+  // ── Custom cursor ────────────────────────────────────────────
+  const cursorDot  = document.getElementById('cursor-dot');
+  const cursorRing = document.getElementById('cursor-ring');
+  let mX = 0, mY = 0, rX = 0, rY = 0, cursorVisible = false;
+
+  document.addEventListener('mousemove', (e) => {
+    mX = e.clientX; mY = e.clientY;
+    if (!cursorVisible) {
+      cursorVisible = true;
+      gsap.to([cursorDot, cursorRing], { opacity: 1, duration: 0.3 });
+    }
+    gsap.to(cursorDot, { x: mX, y: mY, duration: 0.08, ease: 'none', overwrite: true });
+  });
+  gsap.ticker.add(() => {
+    rX += (mX - rX) * 0.13;
+    rY += (mY - rY) * 0.13;
+    gsap.set(cursorRing, { x: rX, y: rY });
+  });
+  document.addEventListener('mouseleave', () => gsap.to([cursorDot, cursorRing], { opacity: 0, duration: 0.3 }));
+
+  function bindCursorHover(root) {
+    (root || document).querySelectorAll('a, button, .photo-placeholder, .module-item').forEach(el => {
+      el.addEventListener('mouseenter', () => { cursorDot.classList.add('hover'); cursorRing.classList.add('hover'); });
+      el.addEventListener('mouseleave', () => { cursorDot.classList.remove('hover'); cursorRing.classList.remove('hover'); });
+    });
+  }
+  bindCursorHover(document);
+
+  // ── Page routing ─────────────────────────────────────────────
+  const pages      = document.querySelectorAll('.page');
+  const navLinks   = document.querySelectorAll('[data-page]');
+  const header     = document.getElementById('site-header');
+  const main       = document.getElementById('main');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const hamburger  = document.getElementById('hamburger-btn');
+
+  function _doShowPage(name) {
+    pages.forEach(p => p.classList.remove('active'));
+    const target = document.getElementById('page-' + name);
+    if (target) target.classList.add('active');
+    document.querySelectorAll('.nav-desktop .nav-link').forEach(link =>
+      link.classList.toggle('active', link.dataset.page === name)
+    );
+    if (name === 'home') {
+      main.classList.add('home-active');
+      header.classList.add('transparent');
+    } else {
+      main.classList.remove('home-active');
+      header.classList.remove('transparent');
+    }
+    lenis.scrollTo(0, { immediate: true });
+    requestAnimationFrame(() => {
+      initReveals();
+      if (name === 'home')      animateHero();
+      if (name === 'proyectos') loadProyectos();
+    });
+    mobileMenu.classList.remove('open');
+    hamburger.classList.remove('open');
+  }
+
+  function showPage(name) {
+    if (document.startViewTransition) {
+      document.startViewTransition(() => _doShowPage(name));
+    } else {
+      _doShowPage(name);
+    }
+  }
+
+  navLinks.forEach(link =>
+    link.addEventListener('click', e => { e.preventDefault(); showPage(link.dataset.page); })
+  );
+
+  hamburger.addEventListener('click', () => {
+    const open = mobileMenu.classList.toggle('open');
+    hamburger.classList.toggle('open', open);
+    hamburger.setAttribute('aria-expanded', String(open));
+  });
+  hamburger.setAttribute('aria-expanded', 'false');
+  hamburger.setAttribute('aria-controls', 'mobile-menu');
+
+  // ── Header transparency ──────────────────────────────────────
+  lenis.on('scroll', ({ scroll }) => {
+    const homeActive = document.getElementById('page-home').classList.contains('active');
+    if (!homeActive) { header.classList.remove('transparent'); return; }
+    header.classList.toggle('transparent', scroll < 80);
+  });
+
+  // ── GSAP Scroll reveals ──────────────────────────────────────
+  function initReveals() {
+    ScrollTrigger.getAll().forEach(t => t.kill());
+    // Excluir elementos del hero — se animan por separado
+    const els = [...document.querySelectorAll('.page.active .reveal')]
+      .filter(el => !el.closest('.hero'));
+    gsap.set(els, { opacity: 0, y: 28 });
+    els.forEach(el => {
+      gsap.to(el, {
+        opacity: 1, y: 0,
+        duration: 0.85,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: el,
+          start: 'top 90%',
+          toggleActions: 'play none none none',
+        }
+      });
+    });
+  }
+
+  // ── Hero slideshow (Ken Burns) ───────────────────────────────
+  let slideshowTimer = null;
+  const kbClasses = ['kb-1', 'kb-2', 'kb-3', 'kb-4'];
+
+  function initHeroSlideshow() {
+    clearInterval(slideshowTimer);
+    const slides = [...document.querySelectorAll('#hero-slides .hero-slide')];
+    if (slides.length < 2) return;
+    let current = 0;
+
+    // Activar primer slide
+    slides.forEach((s, i) => {
+      s.classList.toggle('active', i === 0);
+      if (i === 0) { s.classList.add('kb-1'); }
+    });
+
+    slideshowTimer = setInterval(() => {
+      const prev = current;
+      const next = (current + 1) % slides.length;
+      const kbClass = kbClasses[next % kbClasses.length];
+
+      // Preparar Ken Burns en el siguiente slide antes de mostrarlo
+      slides[next].classList.remove(...kbClasses);
+      slides[next].style.animation = 'none';
+      slides[next].offsetHeight; // force reflow
+      slides[next].classList.add(kbClass);
+      slides[next].style.animation = '';
+
+      slides[next].classList.add('active');
+      setTimeout(() => slides[prev].classList.remove('active'), 1800);
+
+      current = next;
+    }, 6000);
+  }
+
+  // ── Hero word-by-word entrance ───────────────────────────────
+  function animateHero() {
+    const h1 = document.querySelector('.hero h1');
+    if (!h1) return;
+
+    if (!h1.dataset.split) {
+      h1.dataset.split = '1';
+      h1.innerHTML = h1.textContent.trim().split(/\s+/).map(w =>
+        `<span class="word-wrap"><span class="word">${w}</span></span>`
+      ).join(' ');
+    }
+
+    const sub  = document.querySelector('.hero .hero-sub');
+    const ctas = document.querySelector('.hero .hero-ctas');
+
+    gsap.set(h1, { opacity: 1 });
+    if (sub)  gsap.set(sub,  { opacity: 0, y: 18 });
+    if (ctas) gsap.set(ctas, { opacity: 0, y: 14 });
+
+    initHeroSlideshow();
+
+    const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+    tl.fromTo('.hero .word',
+        { yPercent: 115, opacity: 0 },
+        { yPercent: 0, opacity: 1, duration: 1.05, stagger: 0.055 }
+      )
+      .to(sub,  { opacity: 0.75, y: 0, duration: 0.75 }, '-=0.35')
+      .to(ctas, { opacity: 1,    y: 0, duration: 0.6  }, '-=0.35');
+  }
+
+  // ── Proyectos desde Supabase ─────────────────────────────────
+  let proyectosLoaded = false;
+
+  async function loadProyectos() {
+    // Evitar recargar si ya están cargados
+    if (proyectosLoaded) { initReveals(); return; }
+
+    const grid    = document.getElementById('proyectos-grid');
+    const loading = document.getElementById('proyectos-loading');
+
+    const { data: projects, error } = await sb
+      .from('portfolio_projects')
+      .select('id, title, tipo, anio, comment, images')
+      .eq('is_published', true)
+      .order('created_at', { ascending: false });
+
+    if (error || !projects || projects.length === 0) {
+      if (loading) loading.textContent = 'No hay proyectos publicados todavía.';
+      return;
+    }
+
+    // Shuffle para rotación aleatoria
+    const shuffled = [...projects].sort(() => Math.random() - 0.5);
+
+    grid.innerHTML = shuffled.map(p => {
+      const img   = p.images && p.images[0] ? p.images[0] : null;
+      const meta  = [p.tipo, p.anio].filter(Boolean).join(' · ');
+      const waMsg = encodeURIComponent(`Hola Gustavo. Vi el proyecto "${p.title}" en el sitio de rødën y me gustaría conversar sobre algo similar.`);
+      return `
+        <article class="project-card reveal">
+          <div class="photo-placeholder${img ? ' has-photo' : ''}"
+            style="${img ? `background-image:url('${img}')` : ''}">
+            ${img ? '' : 'Foto proximamente'}
+          </div>
+          <div class="label-line">${meta || 'rødën'}</div>
+          <h3>${p.title}</h3>
+          ${p.comment ? `<p class="project-desc">${p.comment}</p>` : ''}
+          <a class="link-arrow" href="https://wa.me/5491145047893?text=${waMsg}" target="_blank" rel="noopener">
+            Consultá por este proyecto →
+          </a>
+        </article>`;
+    }).join('');
+
+    proyectosLoaded = true;
+
+    // Re-iniciar reveals para los nuevos elementos
+    requestAnimationFrame(() => initReveals());
+
+    // Actualizar hero con imágenes reales si hay suficientes
+    updateHeroWithRealImages(projects);
+  }
+
+  // ── Hero dinámico desde Supabase ─────────────────────────────
+  function updateHeroWithRealImages(projects) {
+    // Recopilar todas las imágenes de los proyectos, aplanar y mezclar
+    const allImages = projects
+      .flatMap(p => p.images || [])
+      .filter(Boolean);
+
+    if (allImages.length < 2) return; // Necesita al menos 2 imágenes
+
+    const shuffled = [...allImages].sort(() => Math.random() - 0.5).slice(0, 4);
+    const slidesEl = document.getElementById('hero-slides');
+    if (!slidesEl) return;
+
+    const slides = [...slidesEl.querySelectorAll('.hero-slide')];
+    shuffled.forEach((url, i) => {
+      if (slides[i]) slides[i].style.backgroundImage = `url('${url}')`;
+    });
+  }
+
+  // ── Module accordion ─────────────────────────────────────────
+  document.querySelectorAll('.module-item').forEach(item =>
+    item.addEventListener('click', () => item.classList.toggle('open'))
+  );
+
+  // ── Inspiración ──────────────────────────────────────────────
+  const designsLibrary = [
+    { photo: 'foto 1.png', categoria: 'Living',     anio: 2024, nombre: 'Consola flotante con almacenamiento',  desc: 'Mueble bajo de pared con módulos cerrados y panel de cuadros integrado.' },
+    { photo: 'foto 1.png', categoria: 'Living',     anio: 2023, nombre: 'Consola lineal con módulos cerrados',  desc: 'Mueble bajo extendido con cajones y compartimentos cerrados, sin puertas.' },
+    { photo: 'foto 1.png', categoria: 'Living',     anio: 2023, nombre: 'Living modular con biblioteca integrada', desc: 'Mueble bajo + biblioteca lateral en un mismo lenguaje material.' },
+    { photo: 'foto 1.png', categoria: 'Living',     anio: 2022, nombre: 'Consola con paneles decorativos',      desc: 'Mueble bajo con paneles ranurados que organizan la pared visualmente.' },
+    { photo: 'foto 2.png', categoria: 'Dormitorio', anio: 2024, nombre: 'Dormitorio con cama-cajón',            desc: 'Cama con almacenamiento bajo, escritorio integrado y revestimiento de madera natural.' },
+    { photo: 'foto 2.png', categoria: 'Dormitorio', anio: 2023, nombre: 'Dormitorio plataforma con cajonera',   desc: 'Cama plataforma con cajonera baja perpendicular y nicho lateral integrado.' },
+    { photo: 'foto 2.png', categoria: 'Vestidor',   anio: 2023, nombre: 'Vestidor walk-in con isla',            desc: 'Walk-in con isla central de cajones y zona de maquillaje incorporada.' },
+    { photo: 'foto 2.png', categoria: 'Dormitorio', anio: 2022, nombre: 'Dormitorio con vestidor abierto',      desc: 'Conjunto cama + vestidor sin puertas, organización por módulos visibles.' },
+    { photo: 'foto 3.png', categoria: 'Biblioteca', anio: 2024, nombre: 'Biblioteca abierta para colección',    desc: 'Estantería modular en madera para vajilla, libros y objetos personales.' },
+    { photo: 'foto 3.png', categoria: 'Biblioteca', anio: 2023, nombre: 'Biblioteca techo a piso',              desc: 'Estantería modular de altura completa con módulos abiertos y cerrados intercalados.' },
+    { photo: 'foto 3.png', categoria: 'Biblioteca', anio: 2023, nombre: 'Biblioteca con módulos asimétricos',   desc: 'Composición modular sin grilla regular, espacios para libros y objetos de distinto tamaño.' },
+    { photo: 'foto 3.png', categoria: 'Biblioteca', anio: 2022, nombre: 'Biblioteca-escritorio integrado',      desc: 'Estantería con escritorio embutido como zona de trabajo dentro del mismo conjunto.' },
+    { photo: 'foto 4.png', categoria: 'Living',     anio: 2024, nombre: 'Living con mueble bajo y panel TV',   desc: 'Conjunto modular bajo con módulos cerrados, panel decorativo y mesa baja integrada.' },
+    { photo: 'foto 4.png', categoria: 'Living',     anio: 2023, nombre: 'Living compacto con consola TV',       desc: 'Mueble bajo lineal con TV integrado y mesa baja independiente en madera.' },
+    { photo: 'foto 4.png', categoria: 'Living',     anio: 2023, nombre: 'Living con bar embutido',              desc: 'Mueble bajo con módulo bar incorporado y guarda de copas y botellas.' },
+    { photo: 'foto 4.png', categoria: 'Living',     anio: 2022, nombre: 'Living-comedor en planta abierta',     desc: 'Mueble bajo extendido que articula living y comedor en un mismo lenguaje.' },
+    { photo: 'foto 5.png', categoria: 'Cocina',     anio: 2024, nombre: 'Cocina con isla en negro mate',        desc: 'Diseño en U con isla central, despensa integrada y zona de cocción frontal.' },
+    { photo: 'foto 5.png', categoria: 'Cocina',     anio: 2023, nombre: 'Cocina lineal con barra-isla',         desc: 'Cocina compacta en una pared con isla auxiliar como barra de desayuno.' },
+    { photo: 'foto 5.png', categoria: 'Cocina',     anio: 2023, nombre: 'Cocina con península y desayunador',   desc: 'Layout en L con península que separa cocina del estar y suma desayunador.' },
+    { photo: 'foto 5.png', categoria: 'Cocina',     anio: 2022, nombre: 'Cocina office para departamento',      desc: 'Cocina compacta integrada al office del departamento, sin pared divisoria.' },
+    { photo: 'foto 6.png', categoria: 'Mesa',       anio: 2024, nombre: 'Mesa auxiliar madera y acero',         desc: 'Pieza única en madera maciza con base metálica de acero inoxidable.' },
+    { photo: 'foto 6.png', categoria: 'Mesa',       anio: 2023, nombre: 'Mesa auxiliar lineal',                 desc: 'Pieza accesoria con superficie en madera y estructura metálica minimalista.' },
+    { photo: 'foto 6.png', categoria: 'Mesa',       anio: 2023, nombre: 'Mesa de centro multinivel',            desc: 'Mesa de centro con dos niveles de superficie para libros y objetos de uso.' },
+    { photo: 'foto 6.png', categoria: 'Mesa',       anio: 2022, nombre: 'Mesa de comedor con base metálica',    desc: 'Mesa de comedor en madera maciza con base de acero pintado en negro mate.' }
+  ];
+
+  function renderInspiracion() {
+    const container = document.getElementById('inspiracion-list');
+    if (!container) return;
+    const shuffled = [...designsLibrary].sort(() => Math.random() - 0.5);
+    container.innerHTML = shuffled.slice(0, 8).map(d => `
+      <article class="design-card reveal">
+        <div class="photo-placeholder has-photo" style="background-image: url('Fotos%20de%20proyectos/${encodeURIComponent(d.photo)}');">Foto 4:3</div>
+        <div class="label-line">${d.categoria} · ${d.anio}</div>
+        <h3>${d.nombre}</h3>
+        <p class="design-desc">${d.desc}</p>
+        <button class="link-arrow inspiracion-cta" data-disenio="${d.nombre.replace(/"/g, '&quot;')}">Empezá un proyecto similar →</button>
+      </article>
+    `).join('');
+    bindCursorHover(container);
+  }
+
+  document.addEventListener('click', (e) => {
+    const cta = e.target.closest('.inspiracion-cta');
+    if (!cta) return;
+    e.preventDefault();
+    const text = `Hola Gustavo. Vi el diseño "${cta.dataset.disenio || ''}" en la página de Inspiración y me gustaría empezar un proyecto similar.`;
+    window.open(`https://wa.me/5491145047893?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+  });
+
+  // ── Init ─────────────────────────────────────────────────────
+  renderInspiracion();
+  showPage('home');
+
+})();
+</script>
+
+</body>
+</html>
