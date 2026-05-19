@@ -1962,7 +1962,7 @@ body::after {
   <section class="section">
     <div class="container">
       <div class="inspiracion-list" id="inspiracion-list">
-        <!-- Generado dinámicamente por JS: 8 random de un repositorio de 24 -->
+        <div id="inspiracion-loading" style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--text-tertiary);font-size:14px;letter-spacing:.08em;">Cargando inspiración…</div>
       </div>
     </div>
   </section>
@@ -2092,7 +2092,8 @@ body::after {
     requestAnimationFrame(() => {
       initReveals();
       if (name === 'home')      animateHero();
-      if (name === 'proyectos') loadProyectos();
+      if (name === 'proyectos')   loadProyectos();
+      if (name === 'inspiracion') loadInspiracion();
     });
     mobileMenu.classList.remove('open');
     hamburger.classList.remove('open');
@@ -2288,59 +2289,52 @@ body::after {
   );
 
   // ── Inspiración ──────────────────────────────────────────────
-  const designsLibrary = [
-    { photo: 'foto 1.png', categoria: 'Living',     anio: 2024, nombre: 'Consola flotante con almacenamiento',  desc: 'Mueble bajo de pared con módulos cerrados y panel de cuadros integrado.' },
-    { photo: 'foto 1.png', categoria: 'Living',     anio: 2023, nombre: 'Consola lineal con módulos cerrados',  desc: 'Mueble bajo extendido con cajones y compartimentos cerrados, sin puertas.' },
-    { photo: 'foto 1.png', categoria: 'Living',     anio: 2023, nombre: 'Living modular con biblioteca integrada', desc: 'Mueble bajo + biblioteca lateral en un mismo lenguaje material.' },
-    { photo: 'foto 1.png', categoria: 'Living',     anio: 2022, nombre: 'Consola con paneles decorativos',      desc: 'Mueble bajo con paneles ranurados que organizan la pared visualmente.' },
-    { photo: 'foto 2.png', categoria: 'Dormitorio', anio: 2024, nombre: 'Dormitorio con cama-cajón',            desc: 'Cama con almacenamiento bajo, escritorio integrado y revestimiento de madera natural.' },
-    { photo: 'foto 2.png', categoria: 'Dormitorio', anio: 2023, nombre: 'Dormitorio plataforma con cajonera',   desc: 'Cama plataforma con cajonera baja perpendicular y nicho lateral integrado.' },
-    { photo: 'foto 2.png', categoria: 'Vestidor',   anio: 2023, nombre: 'Vestidor walk-in con isla',            desc: 'Walk-in con isla central de cajones y zona de maquillaje incorporada.' },
-    { photo: 'foto 2.png', categoria: 'Dormitorio', anio: 2022, nombre: 'Dormitorio con vestidor abierto',      desc: 'Conjunto cama + vestidor sin puertas, organización por módulos visibles.' },
-    { photo: 'foto 3.png', categoria: 'Biblioteca', anio: 2024, nombre: 'Biblioteca abierta para colección',    desc: 'Estantería modular en madera para vajilla, libros y objetos personales.' },
-    { photo: 'foto 3.png', categoria: 'Biblioteca', anio: 2023, nombre: 'Biblioteca techo a piso',              desc: 'Estantería modular de altura completa con módulos abiertos y cerrados intercalados.' },
-    { photo: 'foto 3.png', categoria: 'Biblioteca', anio: 2023, nombre: 'Biblioteca con módulos asimétricos',   desc: 'Composición modular sin grilla regular, espacios para libros y objetos de distinto tamaño.' },
-    { photo: 'foto 3.png', categoria: 'Biblioteca', anio: 2022, nombre: 'Biblioteca-escritorio integrado',      desc: 'Estantería con escritorio embutido como zona de trabajo dentro del mismo conjunto.' },
-    { photo: 'foto 4.png', categoria: 'Living',     anio: 2024, nombre: 'Living con mueble bajo y panel TV',   desc: 'Conjunto modular bajo con módulos cerrados, panel decorativo y mesa baja integrada.' },
-    { photo: 'foto 4.png', categoria: 'Living',     anio: 2023, nombre: 'Living compacto con consola TV',       desc: 'Mueble bajo lineal con TV integrado y mesa baja independiente en madera.' },
-    { photo: 'foto 4.png', categoria: 'Living',     anio: 2023, nombre: 'Living con bar embutido',              desc: 'Mueble bajo con módulo bar incorporado y guarda de copas y botellas.' },
-    { photo: 'foto 4.png', categoria: 'Living',     anio: 2022, nombre: 'Living-comedor en planta abierta',     desc: 'Mueble bajo extendido que articula living y comedor en un mismo lenguaje.' },
-    { photo: 'foto 5.png', categoria: 'Cocina',     anio: 2024, nombre: 'Cocina con isla en negro mate',        desc: 'Diseño en U con isla central, despensa integrada y zona de cocción frontal.' },
-    { photo: 'foto 5.png', categoria: 'Cocina',     anio: 2023, nombre: 'Cocina lineal con barra-isla',         desc: 'Cocina compacta en una pared con isla auxiliar como barra de desayuno.' },
-    { photo: 'foto 5.png', categoria: 'Cocina',     anio: 2023, nombre: 'Cocina con península y desayunador',   desc: 'Layout en L con península que separa cocina del estar y suma desayunador.' },
-    { photo: 'foto 5.png', categoria: 'Cocina',     anio: 2022, nombre: 'Cocina office para departamento',      desc: 'Cocina compacta integrada al office del departamento, sin pared divisoria.' },
-    { photo: 'foto 6.png', categoria: 'Mesa',       anio: 2024, nombre: 'Mesa auxiliar madera y acero',         desc: 'Pieza única en madera maciza con base metálica de acero inoxidable.' },
-    { photo: 'foto 6.png', categoria: 'Mesa',       anio: 2023, nombre: 'Mesa auxiliar lineal',                 desc: 'Pieza accesoria con superficie en madera y estructura metálica minimalista.' },
-    { photo: 'foto 6.png', categoria: 'Mesa',       anio: 2023, nombre: 'Mesa de centro multinivel',            desc: 'Mesa de centro con dos niveles de superficie para libros y objetos de uso.' },
-    { photo: 'foto 6.png', categoria: 'Mesa',       anio: 2022, nombre: 'Mesa de comedor con base metálica',    desc: 'Mesa de comedor en madera maciza con base de acero pintado en negro mate.' }
-  ];
+  let inspiracionLoaded = false;
 
-  function renderInspiracion() {
+  async function loadInspiracion() {
+    if (inspiracionLoaded) { initReveals(); return; }
+
     const container = document.getElementById('inspiracion-list');
-    if (!container) return;
-    const shuffled = [...designsLibrary].sort(() => Math.random() - 0.5);
-    container.innerHTML = shuffled.slice(0, 8).map(d => `
-      <article class="design-card reveal">
-        <div class="photo-placeholder has-photo" style="background-image: url('Fotos%20de%20proyectos/${encodeURIComponent(d.photo)}');">Foto 4:3</div>
-        <div class="label-line">${d.categoria} · ${d.anio}</div>
-        <h3>${d.nombre}</h3>
-        <p class="design-desc">${d.desc}</p>
-        <button class="link-arrow inspiracion-cta" data-disenio="${d.nombre.replace(/"/g, '&quot;')}">Empezá un proyecto similar →</button>
-      </article>
-    `).join('');
+    const loading   = document.getElementById('inspiracion-loading');
+
+    const { data: items, error } = await sb
+      .from('inspiration_items')
+      .select('id, title, category, comment, images')
+      .eq('is_published', true)
+      .order('created_at', { ascending: false });
+
+    if (error || !items || items.length === 0) {
+      if (loading) loading.textContent = 'No hay inspiración publicada todavía.';
+      return;
+    }
+
+    // Shuffle y mostrar hasta 8 ítems
+    const shuffled = [...items].sort(() => Math.random() - 0.5).slice(0, 8);
+
+    container.innerHTML = shuffled.map(item => {
+      const img    = item.images && item.images[0] ? item.images[0] : null;
+      const waMsg  = encodeURIComponent(`Hola Gustavo. Vi el diseño "${item.title}" en la página de Inspiración de rødën y me gustaría empezar un proyecto similar.`);
+      return `
+        <article class="design-card reveal">
+          <div class="photo-placeholder${img ? ' has-photo' : ''}"
+               style="${img ? `background-image:url('${img}')` : ''}">
+            ${img ? '' : 'Foto próximamente'}
+          </div>
+          <div class="label-line">${item.category || 'rødën'}</div>
+          <h3>${item.title}</h3>
+          ${item.comment ? `<p class="design-desc">${item.comment}</p>` : ''}
+          <a class="link-arrow" href="https://wa.me/5491145047893?text=${waMsg}" target="_blank" rel="noopener">
+            Empezá un proyecto similar →
+          </a>
+        </article>`;
+    }).join('');
+
+    inspiracionLoaded = true;
     bindCursorHover(container);
+    requestAnimationFrame(() => initReveals());
   }
 
-  document.addEventListener('click', (e) => {
-    const cta = e.target.closest('.inspiracion-cta');
-    if (!cta) return;
-    e.preventDefault();
-    const text = `Hola Gustavo. Vi el diseño "${cta.dataset.disenio || ''}" en la página de Inspiración y me gustaría empezar un proyecto similar.`;
-    window.open(`https://wa.me/5491145047893?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
-  });
-
   // ── Init ─────────────────────────────────────────────────────
-  renderInspiracion();
   showPage('home');
 
 })();
