@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>rødën — Repositorio</title>
+<title>rødën — Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
@@ -17,10 +17,8 @@
   --red: #CC3333;
   --green: #2A7A2A;
 }
-
 * { box-sizing: border-box; margin: 0; padding: 0; }
 a, button { touch-action: manipulation; }
-
 body {
   font-family: 'Inter', -apple-system, sans-serif;
   background: var(--bg);
@@ -31,531 +29,186 @@ body {
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
-
-/* ── UTILITIES ─────────────────────────────────────────────── */
 .hidden { display: none !important; }
-
-.brand {
-  font-family: 'Inter', sans-serif;
-  font-weight: 300;
-  letter-spacing: -0.01em;
-}
+.brand { font-family: 'Inter', sans-serif; font-weight: 300; letter-spacing: -0.01em; }
 
 /* ── LOGIN ──────────────────────────────────────────────────── */
 #view-login {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 24px;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 24px;
 }
-
 .login-card {
-  width: 100%;
-  max-width: 400px;
-  background: var(--white);
-  border: 1px solid var(--border);
-  padding: 48px 40px 40px;
+  width: 100%; max-width: 400px;
+  background: var(--white); border: 1px solid var(--border); padding: 48px 40px 40px;
 }
+.login-logo { font-size: 26px; font-weight: 300; letter-spacing: -0.01em; margin-bottom: 8px; }
+.login-sub  { font-size: 13px; color: var(--text-3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 40px; }
 
-.login-logo {
-  font-size: 26px;
-  font-weight: 300;
-  letter-spacing: -0.01em;
-  margin-bottom: 8px;
-}
-
-.login-sub {
-  font-size: 13px;
-  color: var(--text-3);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 40px;
-}
-
+/* ── FORM FIELDS ────────────────────────────────────────────── */
 .field { margin-bottom: 20px; }
-
-.field label {
-  display: block;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-3);
-  margin-bottom: 8px;
-}
-
+.field label { display: block; font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
 .field input, .field select, .field textarea {
-  width: 100%;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text);
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 300;
-  padding: 12px 14px;
-  outline: none;
-  transition: border-color 150ms ease-out;
-  border-radius: 0;
-  -webkit-appearance: none;
-  appearance: none;
+  width: 100%; border: 1px solid var(--border); background: var(--bg); color: var(--text);
+  font-family: inherit; font-size: 15px; font-weight: 300; padding: 12px 14px;
+  outline: none; transition: border-color 150ms ease-out; border-radius: 0; -webkit-appearance: none; appearance: none;
 }
-
-.field input:focus,
-.field select:focus,
-.field textarea:focus { border-color: var(--text); }
-
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--text); }
 .field textarea { resize: vertical; min-height: 80px; }
 
+/* ── BUTTONS ────────────────────────────────────────────────── */
 .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 13px 24px;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  cursor: pointer;
-  border: none;
-  border-radius: 0;
-  transition: background 150ms ease-out, color 150ms ease-out, opacity 150ms ease-out;
-  text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 13px 24px; font-family: inherit; font-size: 14px; font-weight: 500;
+  letter-spacing: 0.03em; cursor: pointer; border: none; border-radius: 0;
+  transition: background 150ms, color 150ms, opacity 150ms; text-decoration: none;
 }
-
 .btn:active { opacity: 0.8; }
 .btn:disabled { opacity: 0.45; pointer-events: none; }
-
 .btn-primary { background: var(--text); color: var(--bg); }
 .btn-primary:hover { background: #000; }
-
-.btn-ghost {
-  background: transparent;
-  color: var(--text);
-  border: 1px solid var(--border);
-}
+.btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
 .btn-ghost:hover { border-color: var(--text); }
-
-.btn-danger { background: var(--red); color: white; }
-.btn-danger:hover { background: #aa2222; }
-
-.btn-icon {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-3);
-  padding: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 150ms ease-out;
-}
+.btn-full { width: 100%; }
+.btn-icon { background: none; border: none; cursor: pointer; color: var(--text-3); padding: 6px; display: inline-flex; align-items: center; justify-content: center; transition: color 150ms; }
 .btn-icon:hover { color: var(--text); }
 .btn-icon.danger:hover { color: var(--red); }
 
-.btn-full { width: 100%; }
+/* ── MESSAGES ───────────────────────────────────────────────── */
+.error-msg { background: #FFF0F0; border: 1px solid #FFCCCC; color: var(--red); font-size: 13px; padding: 10px 14px; margin-bottom: 20px; }
 
-.error-msg {
-  background: #FFF0F0;
-  border: 1px solid #FFCCCC;
-  color: var(--red);
-  font-size: 13px;
-  padding: 10px 14px;
-  margin-bottom: 20px;
-}
-
-/* ── HEADER ─────────────────────────────────────────────────── */
+/* ── APP SHELL ──────────────────────────────────────────────── */
 .app-header {
-  position: sticky;
-  top: 0;
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-  z-index: 50;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  padding: 0 24px;
-  gap: 16px;
+  position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border);
+  z-index: 50; height: 60px; display: flex; align-items: center; padding: 0 24px; gap: 16px;
 }
+.app-header .logo-area { display: flex; align-items: baseline; gap: 10px; }
+.app-header .logo-text { font-size: 20px; font-weight: 300; letter-spacing: -0.01em; }
+.app-header .header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
 
-.app-header .logo-area {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  flex: 1;
+/* ── TABS ───────────────────────────────────────────────────── */
+.tabs {
+  display: flex; gap: 0; border-bottom: 1px solid var(--border);
+  background: var(--bg); padding: 0 24px;
 }
+.tab-btn {
+  background: none; border: none; cursor: pointer; font-family: inherit;
+  font-size: 13px; font-weight: 400; color: var(--text-3); padding: 12px 16px;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color 150ms, border-color 150ms; letter-spacing: 0.02em;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
 
-.app-header .logo-text {
-  font-size: 20px;
-  font-weight: 300;
-  letter-spacing: -0.01em;
-}
-
-.app-header .section-label {
-  font-size: 11px;
-  color: var(--text-3);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-weight: 400;
-}
-
-/* ── CONTENIDO PRINCIPAL ────────────────────────────────────── */
-.app-content {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 32px 24px 64px;
-}
+/* ── CONTENT ────────────────────────────────────────────────── */
+.app-content { max-width: 960px; margin: 0 auto; padding: 32px 24px 80px; }
 
 /* ── STATS ──────────────────────────────────────────────────── */
-.stats-row {
-  display: flex;
-  gap: 24px;
-  margin-bottom: 32px;
-  flex-wrap: wrap;
-}
-
-.stat-chip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--text-2);
-}
-
-.stat-chip strong {
-  font-size: 22px;
-  font-weight: 500;
-  color: var(--text);
-  line-height: 1;
-}
+.stats-row { display: flex; gap: 24px; margin-bottom: 32px; flex-wrap: wrap; }
+.stat-chip { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); }
+.stat-chip strong { font-size: 22px; font-weight: 500; color: var(--text); line-height: 1; }
 
 /* ── ACTIONS BAR ────────────────────────────────────────────── */
-.actions-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-  gap: 12px;
-}
+.actions-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+.actions-bar h2 { font-size: 13px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
 
-.actions-bar h2 {
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-3);
+/* ── LIST ───────────────────────────────────────────────────── */
+.items-list { display: flex; flex-direction: column; border-top: 1px solid var(--border); }
+.item-row {
+  display: grid; grid-template-columns: 80px 1fr auto;
+  gap: 16px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border);
 }
-
-/* ── PROJECT LIST ───────────────────────────────────────────── */
-.projects-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  border-top: 1px solid var(--border);
-}
-
-.project-row {
-  display: grid;
-  grid-template-columns: 80px 1fr auto;
-  gap: 16px;
-  align-items: center;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-@media (max-width: 600px) {
-  .project-row { grid-template-columns: 60px 1fr auto; gap: 12px; }
-}
-
-.project-thumb {
-  width: 80px;
-  height: 60px;
-  object-fit: cover;
-  background: var(--border);
-  display: block;
-  flex-shrink: 0;
-}
-
-@media (max-width: 600px) {
-  .project-thumb { width: 60px; height: 45px; }
-}
-
-.project-thumb.empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  color: var(--text-3);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.project-info { min-width: 0; }
-
-.project-title {
-  font-size: 15px;
-  font-weight: 400;
-  margin-bottom: 3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.project-meta {
-  font-size: 12px;
-  color: var(--text-3);
-}
+@media (max-width: 600px) { .item-row { grid-template-columns: 60px 1fr auto; gap: 12px; } }
+.item-thumb { width: 80px; height: 60px; object-fit: cover; background: var(--border); display: block; flex-shrink: 0; }
+@media (max-width: 600px) { .item-thumb { width: 60px; height: 45px; } }
+.item-thumb.empty { display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--text-3); letter-spacing: 0.05em; text-transform: uppercase; }
+.item-info { min-width: 0; }
+.item-title { font-size: 15px; font-weight: 400; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item-meta  { font-size: 12px; color: var(--text-3); }
+.item-actions { display: flex; align-items: center; gap: 4px; }
 
 .published-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  padding: 2px 8px;
-  border-radius: 999px;
-  cursor: pointer;
-  border: none;
-  font-family: inherit;
-  transition: opacity 150ms ease-out;
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.04em; padding: 2px 8px;
+  border-radius: 999px; cursor: pointer; border: none; font-family: inherit;
+  transition: opacity 150ms; white-space: nowrap;
 }
 .published-pill:hover { opacity: 0.75; }
 .published-pill.on  { background: #E6F4E6; color: var(--green); }
 .published-pill.off { background: #F5F5F5; color: var(--text-3); }
 
-.project-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
 /* ── FORM ───────────────────────────────────────────────────── */
-.form-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--border);
-}
-
-.form-header h1 {
-  font-size: 20px;
-  font-weight: 400;
-  flex: 1;
-}
-
 .form-section-label {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-3);
-  margin-bottom: 16px;
-  margin-top: 32px;
-  padding-top: 24px;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-3); margin-bottom: 16px; margin-top: 32px; padding-top: 24px;
   border-top: 1px solid var(--border);
 }
-.form-section-label:first-of-type { margin-top: 0; border-top: none; padding-top: 0; }
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
+.form-section-label.first { margin-top: 0; border-top: none; padding-top: 0; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
 
 /* ── IMAGE SLOTS ────────────────────────────────────────────── */
-.image-slots {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
-
-@media (max-width: 600px) {
-  .image-slots { grid-template-columns: repeat(2, 1fr); }
-}
-
+.image-slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+@media (max-width: 600px) { .image-slots { grid-template-columns: repeat(2, 1fr); } }
 .img-slot {
-  aspect-ratio: 4 / 3;
-  border: 1px dashed var(--border);
-  position: relative;
-  cursor: pointer;
-  background: var(--white);
-  overflow: hidden;
-  transition: border-color 150ms ease-out;
+  aspect-ratio: 4 / 3; border: 1px dashed var(--border); position: relative;
+  cursor: pointer; background: var(--white); overflow: hidden; transition: border-color 150ms;
 }
 .img-slot:hover { border-color: var(--text-2); }
-
-.img-slot input[type="file"] {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  cursor: pointer;
-  z-index: 2;
-}
-
-.img-slot-preview {
-  position: absolute;
-  inset: 0;
-  object-fit: cover;
-  width: 100%;
-  height: 100%;
-}
-
+.img-slot.required-empty { border-color: #FFAAAA; }
+.img-slot input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; z-index: 2; }
+.img-slot-preview { position: absolute; inset: 0; object-fit: cover; width: 100%; height: 100%; }
 .img-slot-placeholder {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  color: var(--text-3);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  pointer-events: none;
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 6px;
+  color: var(--text-3); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; pointer-events: none;
 }
-
 .img-slot-placeholder svg { opacity: 0.4; }
-
+.img-slot-placeholder .req-badge {
+  font-size: 9px; background: #FFE0E0; color: #CC5555; padding: 1px 5px; border-radius: 3px;
+}
 .img-slot-remove {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 24px;
-  height: 24px;
-  background: rgba(0,0,0,0.6);
-  color: white;
-  border: none;
-  cursor: pointer;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 3;
-  font-size: 14px;
-  line-height: 1;
-  transition: background 150ms ease-out;
+  position: absolute; top: 6px; right: 6px; width: 24px; height: 24px;
+  background: rgba(0,0,0,0.6); color: white; border: none; cursor: pointer;
+  display: none; align-items: center; justify-content: center; z-index: 3; font-size: 14px; line-height: 1;
+  transition: background 150ms;
 }
 .img-slot-remove:hover { background: rgba(0,0,0,0.85); }
 .img-slot.has-image .img-slot-remove { display: flex; }
 .img-slot.has-image .img-slot-placeholder { display: none; }
-
-.img-slot-num {
-  position: absolute;
-  bottom: 6px;
-  left: 6px;
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--text-3);
-  pointer-events: none;
-  z-index: 1;
-}
+.img-slot-num { position: absolute; bottom: 6px; left: 6px; font-size: 10px; font-weight: 500; color: var(--text-3); pointer-events: none; z-index: 1; }
 
 /* ── TOGGLE ─────────────────────────────────────────────────── */
-.toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 0;
-  border-top: 1px solid var(--border);
-  margin-top: 24px;
-}
-
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; border-top: 1px solid var(--border); margin-top: 24px; }
 .toggle-label { font-size: 14px; font-weight: 400; }
-.toggle-desc { font-size: 12px; color: var(--text-3); margin-top: 2px; }
-
-.toggle {
-  position: relative;
-  width: 44px;
-  height: 24px;
-  flex-shrink: 0;
-}
-
+.toggle-desc  { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+.toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
 .toggle input { opacity: 0; width: 0; height: 0; }
-
-.toggle-track {
-  position: absolute;
-  inset: 0;
-  background: var(--border);
-  cursor: pointer;
-  transition: background 200ms ease-out;
-  border-radius: 12px;
-}
-
+.toggle-track { position: absolute; inset: 0; background: var(--border); cursor: pointer; transition: background 200ms; border-radius: 12px; }
 .toggle input:checked + .toggle-track { background: var(--text); }
-
-.toggle-track::after {
-  content: '';
-  position: absolute;
-  left: 3px;
-  top: 3px;
-  width: 18px;
-  height: 18px;
-  background: white;
-  border-radius: 50%;
-  transition: transform 200ms ease-out;
-}
-
+.toggle-track::after { content: ''; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; background: white; border-radius: 50%; transition: transform 200ms; }
 .toggle input:checked + .toggle-track::after { transform: translateX(20px); }
 
-/* ── FORM FOOTER ────────────────────────────────────────────── */
-.form-footer {
-  display: flex;
-  gap: 12px;
-  margin-top: 32px;
-  padding-top: 24px;
-  border-top: 1px solid var(--border);
-  flex-wrap: wrap;
-}
+.form-footer { display: flex; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); flex-wrap: wrap; }
 
 /* ── LOADING ────────────────────────────────────────────────── */
 .loading-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(250,250,248,0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-  font-size: 13px;
-  color: var(--text-2);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  gap: 12px;
+  position: fixed; inset: 0; background: rgba(250,250,248,0.85);
+  display: flex; align-items: center; justify-content: center; z-index: 999;
+  font-size: 13px; color: var(--text-2); letter-spacing: 0.06em; text-transform: uppercase; gap: 12px;
 }
-
-.spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--border);
-  border-top-color: var(--text);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-
+.spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--text); border-radius: 50%; animation: spin 0.7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-
-.empty-state {
-  padding: 64px 0;
-  text-align: center;
-  color: var(--text-3);
-}
+.empty-state { padding: 64px 0; text-align: center; color: var(--text-3); }
 .empty-state p { margin-top: 8px; font-size: 14px; }
 </style>
 </head>
 <body>
 
-<!-- ── LOGIN ──────────────────────────────────────────────────── -->
+<!-- ══ LOGIN ═══════════════════════════════════════════════════ -->
 <div id="view-login">
   <div class="login-card">
     <div class="login-logo brand">rødën</div>
-    <div class="login-sub">Repositorio de proyectos</div>
+    <div class="login-sub">Repositorio de contenido</div>
     <div id="login-error" class="error-msg hidden"></div>
     <div class="field">
       <label for="login-email">Email</label>
@@ -569,124 +222,108 @@ body {
   </div>
 </div>
 
-<!-- ── LISTA DE PROYECTOS ─────────────────────────────────────── -->
-<div id="view-list" class="hidden">
+<!-- ══ SHELL AUTENTICADO ════════════════════════════════════════ -->
+<div id="view-app" class="hidden">
+
   <header class="app-header">
     <div class="logo-area">
       <span class="logo-text brand">rødën</span>
-      <span class="section-label">Repositorio</span>
     </div>
-    <button class="btn btn-ghost" id="logout-btn" style="padding:8px 16px;font-size:13px;">Salir</button>
+    <div class="header-right">
+      <button class="btn btn-ghost" id="logout-btn" style="padding:8px 16px;font-size:13px;">Salir</button>
+    </div>
   </header>
-  <div class="app-content">
-    <div class="stats-row" id="stats-row">
-      <div class="stat-chip"><strong id="stat-total">—</strong> proyectos</div>
-      <div class="stat-chip"><strong id="stat-pub">—</strong> publicados</div>
-      <div class="stat-chip"><strong id="stat-draft">—</strong> ocultos</div>
-    </div>
+
+  <!-- Tabs de sección -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="proyectos">Proyectos</button>
+    <button class="tab-btn" data-tab="inspiracion">Inspiración</button>
+  </div>
+
+  <!-- ── LISTA ─────────────────────────────────────────────── -->
+  <div id="panel-list" class="app-content">
+    <div class="stats-row" id="stats-row"></div>
     <div class="actions-bar">
-      <h2>Proyectos</h2>
-      <button class="btn btn-primary" id="new-project-btn">
+      <h2 id="list-section-label">Proyectos</h2>
+      <button class="btn btn-primary" id="new-item-btn">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        Nuevo proyecto
+        Nuevo
       </button>
     </div>
-    <div id="projects-list-container" class="projects-list"></div>
+    <div id="items-list-container" class="items-list"></div>
   </div>
-</div>
 
-<!-- ── FORMULARIO ─────────────────────────────────────────────── -->
-<div id="view-form" class="hidden">
-  <header class="app-header">
-    <div class="logo-area">
-      <span class="logo-text brand">rødën</span>
-      <span class="section-label" id="form-header-label">Nuevo proyecto</span>
+  <!-- ── FORMULARIO ────────────────────────────────────────── -->
+  <div id="panel-form" class="app-content hidden">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--border);">
+      <h1 id="form-title" style="font-size:20px;font-weight:400;">Nuevo proyecto</h1>
+      <button class="btn btn-ghost" id="back-btn" style="padding:8px 16px;font-size:13px;">← Volver</button>
     </div>
-    <button class="btn btn-ghost" id="back-btn" style="padding:8px 16px;font-size:13px;">← Volver</button>
-  </header>
-  <div class="app-content">
 
-    <p class="form-section-label">Información</p>
+    <!-- Campos comunes -->
+    <p class="form-section-label first">Información</p>
 
     <div class="field">
-      <label for="f-title">Título de la obra *</label>
+      <label for="f-title">Título *</label>
       <input type="text" id="f-title" placeholder="Ej: Departamento en Belgrano">
     </div>
 
-    <div class="form-row">
-      <div class="field">
-        <label for="f-tipo">Tipo</label>
-        <select id="f-tipo">
-          <option value="">— Seleccionar —</option>
-          <option value="Equipamiento integral">Equipamiento integral</option>
-          <option value="Ambiente completo">Ambiente completo</option>
-          <option value="Pieza puntual">Pieza puntual</option>
-        </select>
+    <!-- Campos solo Proyectos -->
+    <div id="f-proyectos-fields">
+      <div class="form-row">
+        <div class="field">
+          <label for="f-tipo">Tipo</label>
+          <select id="f-tipo">
+            <option value="">— Seleccionar —</option>
+            <option value="Equipamiento integral">Equipamiento integral</option>
+            <option value="Ambiente completo">Ambiente completo</option>
+            <option value="Pieza puntual">Pieza puntual</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-anio">Año</label>
+          <input type="number" id="f-anio" min="2010" max="2099" placeholder="2025">
+        </div>
       </div>
+    </div>
+
+    <!-- Campos solo Inspiración -->
+    <div id="f-inspiracion-fields" class="hidden">
       <div class="field">
-        <label for="f-anio">Año</label>
-        <input type="number" id="f-anio" min="2010" max="2099" placeholder="2025">
+        <label for="f-category">Categoría *</label>
+        <select id="f-category">
+          <option value="">— Seleccionar —</option>
+          <option value="Living">Living</option>
+          <option value="Cocina">Cocina</option>
+          <option value="Dormitorio">Dormitorio</option>
+          <option value="Vestidor">Vestidor</option>
+          <option value="Biblioteca">Biblioteca</option>
+          <option value="Mesa">Mesa</option>
+          <option value="Escritorio">Escritorio</option>
+          <option value="Baño">Baño</option>
+          <option value="Exterior">Exterior</option>
+          <option value="Otro">Otro</option>
+        </select>
       </div>
     </div>
 
     <div class="field">
-      <label for="f-comment">Descripción breve</label>
-      <textarea id="f-comment" placeholder="Cocina, vestidor, biblioteca y dormitorios."></textarea>
+      <label for="f-comment">Descripción</label>
+      <textarea id="f-comment" placeholder="Breve descripción del proyecto o pieza…"></textarea>
     </div>
 
-    <p class="form-section-label">Fotos (hasta 4)</p>
+    <p class="form-section-label" id="photos-label">Fotos (hasta 4)</p>
+    <p id="photos-hint" class="hidden" style="font-size:12px;color:var(--text-3);margin-bottom:12px;">Mínimo 2 fotos requeridas</p>
 
-    <div class="image-slots">
-      <!-- Slot 0 -->
-      <div class="img-slot" id="slot-0">
-        <input type="file" accept="image/jpeg,image/png,image/webp" data-slot="0">
-        <img class="img-slot-preview hidden">
-        <div class="img-slot-placeholder">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 15l4-4 3 3 3-4 4 5H3z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="6.5" r="1.5" stroke="currentColor" stroke-width="1.2"/><rect x="1.5" y="1.5" width="17" height="17" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>
-          Foto 1
-        </div>
-        <button type="button" class="img-slot-remove" data-slot="0">×</button>
-        <span class="img-slot-num">1</span>
-      </div>
-      <!-- Slot 1 -->
-      <div class="img-slot" id="slot-1">
-        <input type="file" accept="image/jpeg,image/png,image/webp" data-slot="1">
-        <img class="img-slot-preview hidden">
-        <div class="img-slot-placeholder">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 15l4-4 3 3 3-4 4 5H3z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="6.5" r="1.5" stroke="currentColor" stroke-width="1.2"/><rect x="1.5" y="1.5" width="17" height="17" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>
-          Foto 2
-        </div>
-        <button type="button" class="img-slot-remove" data-slot="1">×</button>
-        <span class="img-slot-num">2</span>
-      </div>
-      <!-- Slot 2 -->
-      <div class="img-slot" id="slot-2">
-        <input type="file" accept="image/jpeg,image/png,image/webp" data-slot="2">
-        <img class="img-slot-preview hidden">
-        <div class="img-slot-placeholder">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 15l4-4 3 3 3-4 4 5H3z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="6.5" r="1.5" stroke="currentColor" stroke-width="1.2"/><rect x="1.5" y="1.5" width="17" height="17" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>
-          Foto 3
-        </div>
-        <button type="button" class="img-slot-remove" data-slot="2">×</button>
-        <span class="img-slot-num">3</span>
-      </div>
-      <!-- Slot 3 -->
-      <div class="img-slot" id="slot-3">
-        <input type="file" accept="image/jpeg,image/png,image/webp" data-slot="3">
-        <img class="img-slot-preview hidden">
-        <div class="img-slot-placeholder">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 15l4-4 3 3 3-4 4 5H3z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="6.5" r="1.5" stroke="currentColor" stroke-width="1.2"/><rect x="1.5" y="1.5" width="17" height="17" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>
-          Foto 4
-        </div>
-        <button type="button" class="img-slot-remove" data-slot="3">×</button>
-        <span class="img-slot-num">4</span>
-      </div>
+    <div class="image-slots" id="image-slots">
+      <!-- 4 slots generados por JS -->
     </div>
 
     <div class="toggle-row">
       <div>
         <div class="toggle-label">Publicado en el sitio</div>
-        <div class="toggle-desc">El proyecto es visible para los visitantes</div>
+        <div class="toggle-desc">Visible para los visitantes</div>
       </div>
       <label class="toggle">
         <input type="checkbox" id="f-published" checked>
@@ -697,242 +334,231 @@ body {
     <div id="form-error" class="error-msg hidden" style="margin-top:24px;"></div>
 
     <div class="form-footer">
-      <button class="btn btn-primary" id="save-btn">Guardar proyecto</button>
+      <button class="btn btn-primary" id="save-btn">Guardar</button>
       <button class="btn btn-ghost" id="cancel-btn">Cancelar</button>
     </div>
   </div>
+
 </div>
 
-<!-- ── LOADING OVERLAY ─────────────────────────────────────────── -->
+<!-- ══ LOADING ══════════════════════════════════════════════════ -->
 <div id="loading-overlay" class="loading-overlay hidden">
   <div class="spinner"></div>
-  <span id="loading-text">Guardando…</span>
+  <span id="loading-text">Cargando…</span>
 </div>
 
 <script>
 (function () {
 
-  const SUPABASE_URL = 'https://otbdtfncwgubjjxsljux.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90YmR0Zm5jd2d1YmpqeHNsanV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2ODU4NjgsImV4cCI6MjA5NDI2MTg2OH0.lz0sEKYo1fAA_z0hDnHM88nrCnWEouaFZtE3xKiPO50';
-  const { createClient } = supabase;
-  const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+  /* ── Config Supabase ──────────────────────────────────────── */
+  const SB_URL = 'https://otbdtfncwgubjjxsljux.supabase.co';
+  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90YmR0Zm5jd2d1YmpqeHNsanV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2ODU4NjgsImV4cCI6MjA5NDI2MTg2OH0.lz0sEKYo1fAA_z0hDnHM88nrCnWEouaFZtE3xKiPO50';
+  const sb = supabase.createClient(SB_URL, SB_KEY);
 
-  // ── Estado ──────────────────────────────────────────────────
-  let editingId   = null;   // null = nuevo proyecto
-  let slotUrls    = ['', '', '', ''];   // URLs existentes (edición)
-  let slotFiles   = [null, null, null, null]; // archivos nuevos a subir
+  /* ── Estado ─────────────────────────────────────────────── */
+  let activeTab  = 'proyectos';  // 'proyectos' | 'inspiracion'
+  let editingId  = null;
+  let slotUrls   = ['', '', '', ''];
+  let slotFiles  = [null, null, null, null];
 
-  // ── Vistas ──────────────────────────────────────────────────
-  function show(viewId) {
-    ['view-login', 'view-list', 'view-form'].forEach(id => {
-      document.getElementById(id).classList.toggle('hidden', id !== viewId);
-    });
-  }
-
-  // ── Loader ──────────────────────────────────────────────────
+  /* ── Loader ─────────────────────────────────────────────── */
   function setLoading(on, text = 'Guardando…') {
     document.getElementById('loading-overlay').classList.toggle('hidden', !on);
     document.getElementById('loading-text').textContent = text;
   }
 
-  // ── Login ───────────────────────────────────────────────────
-  document.getElementById('login-btn').addEventListener('click', doLogin);
-  document.getElementById('login-pass').addEventListener('keydown', e => {
-    if (e.key === 'Enter') doLogin();
+  /* ── Vistas ─────────────────────────────────────────────── */
+  function showLogin() {
+    document.getElementById('view-login').classList.remove('hidden');
+    document.getElementById('view-app').classList.add('hidden');
+  }
+  function showApp() {
+    document.getElementById('view-login').classList.add('hidden');
+    document.getElementById('view-app').classList.remove('hidden');
+    showList();
+  }
+  function showList() {
+    document.getElementById('panel-list').classList.remove('hidden');
+    document.getElementById('panel-form').classList.add('hidden');
+    renderList();
+  }
+  function showForm() {
+    document.getElementById('panel-list').classList.add('hidden');
+    document.getElementById('panel-form').classList.remove('hidden');
+  }
+
+  /* ── Tabs ────────────────────────────────────────────────── */
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeTab = btn.dataset.tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === activeTab));
+      showList();
+    });
   });
+
+  /* ── Login ───────────────────────────────────────────────── */
+  document.getElementById('login-btn').addEventListener('click', doLogin);
+  document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
   async function doLogin() {
     const email = document.getElementById('login-email').value.trim();
     const pass  = document.getElementById('login-pass').value;
     const errEl = document.getElementById('login-error');
     errEl.classList.add('hidden');
-
-    if (!email || !pass) {
-      errEl.textContent = 'Completá email y contraseña.';
-      errEl.classList.remove('hidden');
-      return;
-    }
-
+    if (!email || !pass) { errEl.textContent = 'Completá email y contraseña.'; errEl.classList.remove('hidden'); return; }
     setLoading(true, 'Verificando…');
     const { error } = await sb.auth.signInWithPassword({ email, password: pass });
     setLoading(false);
-
-    if (error) {
-      errEl.textContent = 'Email o contraseña incorrectos.';
-      errEl.classList.remove('hidden');
-    } else {
-      await renderList();
-      show('view-list');
-    }
+    if (error) { errEl.textContent = 'Email o contraseña incorrectos.'; errEl.classList.remove('hidden'); }
+    else showApp();
   }
 
-  // ── Logout ──────────────────────────────────────────────────
+  /* ── Logout ──────────────────────────────────────────────── */
   document.getElementById('logout-btn').addEventListener('click', async () => {
     await sb.auth.signOut();
-    show('view-login');
+    showLogin();
   });
 
-  // ── Init: revisar sesión activa ──────────────────────────────
-  async function init() {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) {
-      await renderList();
-      show('view-list');
-    } else {
-      show('view-login');
-    }
-  }
-
-  // ── Lista de proyectos ───────────────────────────────────────
-  document.getElementById('new-project-btn').addEventListener('click', () => openForm(null));
-  document.getElementById('back-btn').addEventListener('click', async () => {
-    await renderList();
-    show('view-list');
-  });
-  document.getElementById('cancel-btn').addEventListener('click', async () => {
-    await renderList();
-    show('view-list');
-  });
-
+  /* ── Renderizar lista ────────────────────────────────────── */
   async function renderList() {
+    const isProyectos = activeTab === 'proyectos';
+    const table = isProyectos ? 'portfolio_projects' : 'inspiration_items';
+    const label = isProyectos ? 'Proyectos' : 'Inspiración';
+
+    document.getElementById('list-section-label').textContent = label;
+    document.getElementById('new-item-btn').textContent = '';
+    document.getElementById('new-item-btn').innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Nuevo`;
+
     setLoading(true, 'Cargando…');
-    const { data: projects, error } = await sb
-      .from('portfolio_projects')
+    const { data: items, error } = await sb
+      .from(table)
       .select('*')
       .order('created_at', { ascending: false });
     setLoading(false);
 
-    const container = document.getElementById('projects-list-container');
+    const container = document.getElementById('items-list-container');
+    const statsRow  = document.getElementById('stats-row');
 
-    if (error || !projects) {
-      container.innerHTML = '<p style="color:#CC3333;padding:24px 0;">Error al cargar proyectos.</p>';
-      return;
-    }
+    if (error || !items) { container.innerHTML = '<p style="color:var(--red);padding:24px 0;">Error al cargar.</p>'; return; }
 
-    // Stats
-    const total = projects.length;
-    const pub   = projects.filter(p => p.is_published).length;
-    document.getElementById('stat-total').textContent = total;
-    document.getElementById('stat-pub').textContent   = pub;
-    document.getElementById('stat-draft').textContent = total - pub;
+    const total = items.length;
+    const pub   = items.filter(i => i.is_published).length;
+    statsRow.innerHTML = `
+      <div class="stat-chip"><strong>${total}</strong> ${label.toLowerCase()}</div>
+      <div class="stat-chip"><strong>${pub}</strong> publicados</div>
+      <div class="stat-chip"><strong>${total - pub}</strong> ocultos</div>`;
 
     if (total === 0) {
-      container.innerHTML = `
-        <div class="empty-state">
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect x="4" y="4" width="24" height="24" rx="2" stroke="#CCC" stroke-width="1.5"/><path d="M4 21l7-7 5 5 5-6 7 8" stroke="#CCC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <p>No hay proyectos todavía. Creá el primero.</p>
-        </div>`;
+      container.innerHTML = `<div class="empty-state">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect x="4" y="4" width="24" height="24" rx="2" stroke="#CCC" stroke-width="1.5"/><path d="M4 21l7-7 5 5 5-6 7 8" stroke="#CCC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <p>No hay ${label.toLowerCase()} todavía.</p></div>`;
       return;
     }
 
-    container.innerHTML = projects.map(p => {
-      const thumb = p.images && p.images[0] ? p.images[0] : null;
-      const meta  = [p.tipo, p.anio].filter(Boolean).join(' · ');
+    container.innerHTML = items.map(item => {
+      const thumb = item.images && item.images[0] ? item.images[0] : null;
+      const meta  = isProyectos
+        ? [item.tipo, item.anio].filter(Boolean).join(' · ')
+        : item.category || '—';
       return `
-        <div class="project-row" data-id="${p.id}">
+        <div class="item-row" data-id="${item.id}">
           ${thumb
-            ? `<img class="project-thumb" src="${thumb}" alt="${p.title}" loading="lazy">`
-            : `<div class="project-thumb empty">Sin foto</div>`
-          }
-          <div class="project-info">
-            <div class="project-title">${p.title}</div>
-            <div class="project-meta">${meta || '—'}</div>
+            ? `<img class="item-thumb" src="${thumb}" alt="${item.title}" loading="lazy">`
+            : `<div class="item-thumb empty">Sin foto</div>`}
+          <div class="item-info">
+            <div class="item-title">${item.title}</div>
+            <div class="item-meta">${meta}</div>
           </div>
-          <div class="project-actions">
-            <button class="published-pill ${p.is_published ? 'on' : 'off'}"
-              data-toggle="${p.id}" data-pub="${p.is_published}">
-              ${p.is_published ? '● Publicado' : '○ Oculto'}
+          <div class="item-actions">
+            <button class="published-pill ${item.is_published ? 'on' : 'off'}"
+              data-toggle="${item.id}" data-pub="${item.is_published}">
+              ${item.is_published ? '● Publicado' : '○ Oculto'}
             </button>
-            <button class="btn-icon" data-edit="${p.id}" title="Editar">
+            <button class="btn-icon" data-edit="${item.id}" title="Editar">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5l2 2-8 8-2.5.5.5-2.5 8-8z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
-            <button class="btn-icon danger" data-delete="${p.id}" data-title="${p.title}" title="Eliminar">
+            <button class="btn-icon danger" data-delete="${item.id}" data-title="${item.title}" title="Eliminar">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M5 4V3h6v1M6 7v5M10 7v5M4 4l1 9h6l1-9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
           </div>
         </div>`;
     }).join('');
 
-    // Eventos de la lista
     container.querySelectorAll('[data-edit]').forEach(btn =>
-      btn.addEventListener('click', () => openForm(btn.dataset.edit))
-    );
+      btn.addEventListener('click', () => openForm(btn.dataset.edit)));
     container.querySelectorAll('[data-delete]').forEach(btn =>
-      btn.addEventListener('click', () => confirmDelete(btn.dataset.delete, btn.dataset.title))
-    );
+      btn.addEventListener('click', () => confirmDelete(btn.dataset.delete, btn.dataset.title)));
     container.querySelectorAll('[data-toggle]').forEach(btn =>
-      btn.addEventListener('click', () => togglePublished(btn.dataset.toggle, btn.dataset.pub === 'true'))
-    );
+      btn.addEventListener('click', () => togglePublished(btn.dataset.toggle, btn.dataset.pub === 'true')));
   }
 
-  // ── Toggle publicado ─────────────────────────────────────────
-  async function togglePublished(id, currentPub) {
+  /* ── Toggle publicado ────────────────────────────────────── */
+  async function togglePublished(id, cur) {
+    const table = activeTab === 'proyectos' ? 'portfolio_projects' : 'inspiration_items';
     setLoading(true, 'Actualizando…');
-    await sb.from('portfolio_projects').update({ is_published: !currentPub }).eq('id', id);
+    await sb.from(table).update({ is_published: !cur }).eq('id', id);
     setLoading(false);
     await renderList();
   }
 
-  // ── Eliminar ─────────────────────────────────────────────────
+  /* ── Eliminar ────────────────────────────────────────────── */
   async function confirmDelete(id, title) {
     if (!confirm(`¿Eliminar "${title}"?\n\nEsta acción no se puede deshacer.`)) return;
+    const table = activeTab === 'proyectos' ? 'portfolio_projects' : 'inspiration_items';
     setLoading(true, 'Eliminando…');
-    // Obtener imágenes para borrar del storage
-    const { data } = await sb.from('portfolio_projects').select('images').eq('id', id).single();
+    const { data } = await sb.from(table).select('images').eq('id', id).single();
     if (data?.images?.length) {
-      const paths = data.images.map(url => url.split('/project-images/')[1]).filter(Boolean);
+      const paths = data.images.map(u => u.split('/project-images/')[1]).filter(Boolean);
       if (paths.length) await sb.storage.from('project-images').remove(paths);
     }
-    await sb.from('portfolio_projects').delete().eq('id', id);
+    await sb.from(table).delete().eq('id', id);
     setLoading(false);
     await renderList();
   }
 
-  // ── Formulario ───────────────────────────────────────────────
-  async function openForm(id) {
-    editingId   = id;
-    slotUrls    = ['', '', '', ''];
-    slotFiles   = [null, null, null, null];
+  /* ── Construir slots de imagen ───────────────────────────── */
+  function buildSlots() {
+    const isInspiracion = activeTab === 'inspiracion';
+    const container = document.getElementById('image-slots');
+    container.innerHTML = '';
+    for (let i = 0; i < 4; i++) {
+      const isRequired = isInspiracion && i < 2;
+      const slotEl = document.createElement('div');
+      slotEl.className = 'img-slot';
+      slotEl.id = 'slot-' + i;
+      slotEl.innerHTML = `
+        <input type="file" accept="image/jpeg,image/png,image/webp" data-slot="${i}">
+        <img class="img-slot-preview hidden" alt="">
+        <div class="img-slot-placeholder">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 15l4-4 3 3 3-4 4 5H3z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="6.5" r="1.5" stroke="currentColor" stroke-width="1.2"/><rect x="1.5" y="1.5" width="17" height="17" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>
+          Foto ${i + 1}
+          ${isRequired ? '<span class="req-badge">requerida</span>' : ''}
+        </div>
+        <button type="button" class="img-slot-remove" data-slot="${i}">×</button>
+        <span class="img-slot-num">${i + 1}</span>`;
+      container.appendChild(slotEl);
 
-    document.getElementById('f-title').value     = '';
-    document.getElementById('f-tipo').value      = '';
-    document.getElementById('f-anio').value      = new Date().getFullYear();
-    document.getElementById('f-comment').value   = '';
-    document.getElementById('f-published').checked = true;
-    document.getElementById('form-error').classList.add('hidden');
-    document.getElementById('form-header-label').textContent = id ? 'Editar proyecto' : 'Nuevo proyecto';
-
-    // Limpiar slots
-    for (let i = 0; i < 4; i++) clearSlot(i);
-
-    if (id) {
-      setLoading(true, 'Cargando…');
-      const { data } = await sb.from('portfolio_projects').select('*').eq('id', id).single();
-      setLoading(false);
-      if (data) {
-        document.getElementById('f-title').value     = data.title   || '';
-        document.getElementById('f-tipo').value      = data.tipo    || '';
-        document.getElementById('f-anio').value      = data.anio    || '';
-        document.getElementById('f-comment').value   = data.comment || '';
-        document.getElementById('f-published').checked = data.is_published;
-        // Precargar imágenes existentes
-        if (data.images) {
-          data.images.forEach((url, i) => { if (url) setSlotUrl(i, url); });
-        }
-      }
+      slotEl.querySelector('input[type="file"]').addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        slotFiles[i] = file;
+        setSlotUrl(i, URL.createObjectURL(file));
+      });
+      slotEl.querySelector('.img-slot-remove').addEventListener('click', e => {
+        e.stopPropagation();
+        clearSlot(i);
+      });
     }
-
-    show('view-form');
   }
 
-  // ── Slots de imagen ──────────────────────────────────────────
   function setSlotUrl(i, url) {
     slotUrls[i] = url;
     const slot    = document.getElementById('slot-' + i);
     const preview = slot.querySelector('.img-slot-preview');
-    preview.src = url;
+    preview.src   = url;
     preview.classList.remove('hidden');
     slot.classList.add('has-image');
+    slot.classList.remove('required-empty');
   }
 
   function clearSlot(i) {
@@ -941,71 +567,123 @@ body {
     const slot    = document.getElementById('slot-' + i);
     const preview = slot.querySelector('.img-slot-preview');
     const input   = slot.querySelector('input[type="file"]');
-    preview.src = '';
+    preview.src   = '';
     preview.classList.add('hidden');
     slot.classList.remove('has-image');
-    // Resetear input file
     input.value = '';
   }
 
-  // Eventos de slots
-  for (let i = 0; i < 4; i++) {
-    const slot  = document.getElementById('slot-' + i);
-    const input = slot.querySelector('input[type="file"]');
-    const rmBtn = slot.querySelector('.img-slot-remove');
+  /* ── Abrir formulario ────────────────────────────────────── */
+  async function openForm(id) {
+    editingId  = id || null;
+    slotUrls   = ['', '', '', ''];
+    slotFiles  = [null, null, null, null];
 
-    input.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      slotFiles[i] = file;
-      const url = URL.createObjectURL(file);
-      setSlotUrl(i, url);
-      // La URL temporal se reemplaza con la de Storage al guardar
-    });
+    const isProyectos    = activeTab === 'proyectos';
+    const isInspiracion  = !isProyectos;
 
-    rmBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      clearSlot(i);
-    });
+    // Adaptar UI según sección
+    document.getElementById('f-proyectos-fields').classList.toggle('hidden', isInspiracion);
+    document.getElementById('f-inspiracion-fields').classList.toggle('hidden', isProyectos);
+    document.getElementById('photos-hint').classList.toggle('hidden', isProyectos);
+    document.getElementById('form-title').textContent = id
+      ? (isProyectos ? 'Editar proyecto' : 'Editar inspiración')
+      : (isProyectos ? 'Nuevo proyecto'  : 'Nueva inspiración');
+
+    // Limpiar campos
+    document.getElementById('f-title').value      = '';
+    document.getElementById('f-tipo').value        = '';
+    document.getElementById('f-anio').value        = new Date().getFullYear();
+    document.getElementById('f-category').value   = '';
+    document.getElementById('f-comment').value     = '';
+    document.getElementById('f-published').checked = true;
+    document.getElementById('form-error').classList.add('hidden');
+
+    // Construir slots
+    buildSlots();
+
+    // Precargar si es edición
+    if (id) {
+      const table = isProyectos ? 'portfolio_projects' : 'inspiration_items';
+      setLoading(true, 'Cargando…');
+      const { data } = await sb.from(table).select('*').eq('id', id).single();
+      setLoading(false);
+      if (data) {
+        document.getElementById('f-title').value      = data.title    || '';
+        document.getElementById('f-comment').value    = data.comment  || '';
+        document.getElementById('f-published').checked = data.is_published;
+        if (isProyectos) {
+          document.getElementById('f-tipo').value  = data.tipo  || '';
+          document.getElementById('f-anio').value  = data.anio  || '';
+        } else {
+          document.getElementById('f-category').value = data.category || '';
+        }
+        if (data.images) data.images.forEach((url, i) => { if (url) setSlotUrl(i, url); });
+      }
+    }
+
+    showForm();
   }
 
-  // ── Guardar proyecto ─────────────────────────────────────────
-  document.getElementById('save-btn').addEventListener('click', saveProject);
+  /* ── Guardar ─────────────────────────────────────────────── */
+  document.getElementById('save-btn').addEventListener('click', saveItem);
+  document.getElementById('back-btn').addEventListener('click',   showList);
+  document.getElementById('cancel-btn').addEventListener('click', showList);
+  document.getElementById('new-item-btn').addEventListener('click', () => openForm(null));
 
-  async function saveProject() {
-    const title   = document.getElementById('f-title').value.trim();
-    const tipo    = document.getElementById('f-tipo').value;
-    const anio    = parseInt(document.getElementById('f-anio').value) || new Date().getFullYear();
-    const comment = document.getElementById('f-comment').value.trim();
-    const pub     = document.getElementById('f-published').checked;
-    const errEl   = document.getElementById('form-error');
-
+  async function saveItem() {
+    const isProyectos   = activeTab === 'proyectos';
+    const isInspiracion = !isProyectos;
+    const table  = isProyectos ? 'portfolio_projects' : 'inspiration_items';
+    const errEl  = document.getElementById('form-error');
     errEl.classList.add('hidden');
 
-    if (!title) {
-      errEl.textContent = 'El título es obligatorio.';
+    const title    = document.getElementById('f-title').value.trim();
+    const comment  = document.getElementById('f-comment').value.trim();
+    const pub      = document.getElementById('f-published').checked;
+
+    if (!title) { errEl.textContent = 'El título es obligatorio.'; errEl.classList.remove('hidden'); return; }
+
+    // Validar categoría en Inspiración
+    const category = document.getElementById('f-category').value;
+    if (isInspiracion && !category) {
+      errEl.textContent = 'Seleccioná una categoría.';
       errEl.classList.remove('hidden');
       return;
     }
 
+    // Validar mínimo 2 fotos en Inspiración
+    if (isInspiracion) {
+      let filledSlots = 0;
+      for (let i = 0; i < 4; i++) {
+        if (slotFiles[i] || (slotUrls[i] && slotUrls[i].startsWith('http'))) filledSlots++;
+      }
+      if (filledSlots < 2) {
+        // Marcar slots vacíos requeridos
+        for (let i = 0; i < 2; i++) {
+          const slot = document.getElementById('slot-' + i);
+          if (!slot.classList.contains('has-image')) slot.classList.add('required-empty');
+        }
+        errEl.textContent = 'Inspiración requiere al menos 2 fotos.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+    }
+
     setLoading(true, 'Subiendo imágenes…');
 
-    // Subir archivos nuevos y construir array final de URLs
+    // Subir archivos nuevos
     const finalImages = [];
     for (let i = 0; i < 4; i++) {
       if (slotFiles[i]) {
-        // Archivo nuevo: subir a Storage
         const ext  = slotFiles[i].name.split('.').pop().toLowerCase();
         const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-        const { error: upErr } = await sb.storage
-          .from('project-images')
-          .upload(path, slotFiles[i], { cacheControl: '31536000' });
+        const { error: upErr } = await sb.storage.from('project-images').upload(path, slotFiles[i], { cacheControl: '31536000' });
         if (!upErr) {
           const { data: { publicUrl } } = sb.storage.from('project-images').getPublicUrl(path);
           finalImages.push(publicUrl);
         }
       } else if (slotUrls[i] && slotUrls[i].startsWith('http')) {
-        // URL existente de Storage: conservar
         finalImages.push(slotUrls[i]);
       }
     }
@@ -1014,21 +692,20 @@ body {
 
     const payload = {
       title,
-      tipo:         tipo || null,
-      anio,
       comment:      comment || null,
       images:       finalImages,
       is_published: pub,
+      ...(isProyectos ? {
+        tipo: document.getElementById('f-tipo').value || null,
+        anio: parseInt(document.getElementById('f-anio').value) || new Date().getFullYear(),
+      } : {
+        category,
+      })
     };
 
-    let dbError;
-    if (editingId) {
-      const { error } = await sb.from('portfolio_projects').update(payload).eq('id', editingId);
-      dbError = error;
-    } else {
-      const { error } = await sb.from('portfolio_projects').insert(payload);
-      dbError = error;
-    }
+    const { error: dbError } = editingId
+      ? await sb.from(table).update(payload).eq('id', editingId)
+      : await sb.from(table).insert(payload);
 
     setLoading(false);
 
@@ -1036,12 +713,17 @@ body {
       errEl.textContent = 'Error al guardar: ' + dbError.message;
       errEl.classList.remove('hidden');
     } else {
-      await renderList();
-      show('view-list');
+      showList();
     }
   }
 
-  // ── Arrancar ─────────────────────────────────────────────────
+  /* ── Init ────────────────────────────────────────────────── */
+  async function init() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) showApp();
+    else showLogin();
+  }
+
   init();
 
 })();
