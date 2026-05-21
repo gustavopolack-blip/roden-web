@@ -804,6 +804,29 @@ main.home-active { padding-top: 0; } /* hero is full-bleed in home */
   flex-direction: column;
   gap: 0;
   border-top: 1px solid var(--border-default);
+  position: relative;
+}
+
+/* ── Línea de progreso vertical (solo desktop) ── */
+.proceso-track {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: var(--border-default);
+  display: none;
+  pointer-events: none;
+}
+@media (min-width: 1024px) { .proceso-track { display: block; } }
+
+.proceso-track-fill {
+  width: 100%;
+  height: 100%;
+  background-color: var(--text-primary);
+  transform-origin: top center;
+  transform: scaleY(0);
+  will-change: transform;
 }
 
 .module-item {
@@ -1687,6 +1710,7 @@ body::after {
   <section class="section">
     <div class="container">
       <div class="modules-list" id="modules-list">
+        <div class="proceso-track"><div class="proceso-track-fill" id="proceso-track-fill"></div></div>
 
         <div class="module-item">
           <div class="module-num">01</div>
@@ -2195,6 +2219,7 @@ body::after {
       if (name === 'home')      { animateHero(); loadHomeProyectos(); }
       if (name === 'proyectos')   loadProyectos();
       if (name === 'inspiracion') loadInspiracion();
+      if (name === 'proceso')     initProcesoAnimations();
     });
     mobileMenu.classList.remove('open');
     hamburger.classList.remove('open');
@@ -2604,6 +2629,48 @@ body::after {
   document.addEventListener('dragstart', function(e) {
     if (e.target.closest(IMG_SELECTOR)) e.preventDefault();
   });
+
+  // ── Proceso: línea de progreso + stagger ────────────────────
+  function initProcesoAnimations() {
+    const fill  = document.getElementById('proceso-track-fill');
+    const list  = document.getElementById('modules-list');
+    const items = [...document.querySelectorAll('#page-proceso .module-item')];
+    if (!list || items.length === 0) return;
+
+    // Stagger de entrada en scroll
+    gsap.fromTo(items,
+      { opacity: 0, y: 24 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.65,
+        ease: 'power3.out',
+        stagger: 0.09,
+        scrollTrigger: {
+          trigger: list,
+          start: 'top 78%',
+          toggleActions: 'play none none none',
+        }
+      }
+    );
+
+    // Línea de progreso animada con scroll (solo desktop)
+    if (fill && window.matchMedia('(min-width: 1024px)').matches) {
+      gsap.fromTo(fill,
+        { scaleY: 0 },
+        {
+          scaleY: 1,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: list,
+            start: 'top 55%',
+            end: 'bottom 45%',
+            scrub: 1,
+          }
+        }
+      );
+    }
+  }
 
   // ── Init ─────────────────────────────────────────────────────
   showPage('home');
