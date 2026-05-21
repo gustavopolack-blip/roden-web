@@ -620,11 +620,17 @@ main.home-active { padding-top: 0; } /* hero is full-bleed in home */
   gap: 32px;
   margin-bottom: 48px;
 }
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   .sistema-modules {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 32px;
+  }
+}
+@media (min-width: 1024px) {
+  .sistema-modules {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
   }
 }
 .sistema-module .num { font-size: 14px; color: var(--text-tertiary); font-weight: 500; letter-spacing: 0.05em; margin-bottom: 16px; display: block; }
@@ -1472,34 +1478,39 @@ body::after {
     <div class="container">
       <div class="section-header reveal">
         <h2 class="t-h2">Sistema <span class="brand">rødën</span></h2>
-        <p class="section-intro t-body-l">Un método de trabajo en cinco módulos para que lo que se proyecta coincida con lo que se fabrica e instala.</p>
+        <p class="section-intro t-body-l">Un método de trabajo en seis módulos para que lo que se proyecta coincida con lo que se fabrica e instala.</p>
       </div>
 
       <div class="sistema-modules">
         <div class="sistema-module reveal">
           <span class="num">01</span>
-          <h3>Diagnóstico en contexto real</h3>
-          <p>Evita errores de medida y diseños mal adaptados al uso real.</p>
+          <h3>Relevamiento</h3>
+          <p>Diagnóstico en contexto real. Evita errores de medida y diseños mal adaptados al uso real.</p>
         </div>
         <div class="sistema-module reveal">
           <span class="num">02</span>
-          <h3>Diseño validado antes de fabricar</h3>
-          <p>Evita cambios en obra y diferencias entre render y resultado.</p>
+          <h3>Proyecto</h3>
+          <p>Diseño validado antes de fabricar. Evita cambios en obra y diferencias entre render y resultado.</p>
         </div>
         <div class="sistema-module reveal">
           <span class="num">03</span>
-          <h3>Documentación técnica ejecutable</h3>
-          <p>Evita interpretaciones ambiguas y errores de ejecución.</p>
+          <h3>Presupuesto</h3>
+          <p>Documentación técnica ejecutable. Evita interpretaciones ambiguas y errores de ejecución.</p>
         </div>
         <div class="sistema-module reveal">
           <span class="num">04</span>
-          <h3>Fabricación controlada</h3>
-          <p>Evita pérdida de calidad y dilución de responsabilidad.</p>
+          <h3>Producción</h3>
+          <p>Fabricación controlada. Evita pérdida de calidad y dilución de responsabilidad.</p>
         </div>
         <div class="sistema-module reveal">
           <span class="num">05</span>
-          <h3>Instalación y cierre de obra</h3>
-          <p>Evita terminaciones deficientes y proyectos que quedan abiertos.</p>
+          <h3>Entrega</h3>
+          <p>Instalación y cierre de obra. Evita terminaciones deficientes y proyectos que quedan abiertos.</p>
+        </div>
+        <div class="sistema-module reveal">
+          <span class="num">06</span>
+          <h3>Servicio Postventa</h3>
+          <p>Acompañamiento posterior a la entrega. Evita que el cliente quede solo una vez finalizado el proyecto.</p>
         </div>
       </div>
 
