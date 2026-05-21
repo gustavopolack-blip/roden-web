@@ -1321,6 +1321,16 @@ body::after {
   opacity: 0.7;
 }
 .proto-banner:hover { opacity: 1; }
+
+/* ── Protección de imágenes ─────────────────────────────────── */
+/* Desactiva menú de long-press en iOS y el callout de guardar  */
+.hero-slide,
+.photo-placeholder,
+.card-slide {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
 </style>
 </head>
 <body>
@@ -2424,8 +2434,8 @@ body::after {
       return;
     }
 
-    // Shuffle y mostrar hasta 8 ítems
-    const shuffled = [...items].sort(() => Math.random() - 0.5).slice(0, 8);
+    // Shuffle y mostrar hasta 18 ítems
+    const shuffled = [...items].sort(() => Math.random() - 0.5).slice(0, 18);
 
     container.innerHTML = shuffled.map(item => {
       const img    = item.images && item.images[0] ? item.images[0] : null;
@@ -2449,6 +2459,16 @@ body::after {
     bindCursorHover(container);
     requestAnimationFrame(() => initReveals());
   }
+
+  // ── Protección de imágenes ───────────────────────────────────
+  // Bloquea clic derecho y drag sobre contenedores de imagen
+  const IMG_SELECTOR = '.hero-slide, .photo-placeholder, .card-slide';
+  document.addEventListener('contextmenu', function(e) {
+    if (e.target.closest(IMG_SELECTOR)) e.preventDefault();
+  });
+  document.addEventListener('dragstart', function(e) {
+    if (e.target.closest(IMG_SELECTOR)) e.preventDefault();
+  });
 
   // ── Init ─────────────────────────────────────────────────────
   showPage('home');

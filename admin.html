@@ -358,8 +358,8 @@ body {
   /* ── Estado ─────────────────────────────────────────────── */
   let activeTab  = 'proyectos';  // 'proyectos' | 'inspiracion'
   let editingId  = null;
-  let slotUrls   = ['', '', '', ''];
-  let slotFiles  = [null, null, null, null];
+  let slotUrls   = Array(15).fill('');
+  let slotFiles  = Array(15).fill(null);
 
   /* ── Loader ─────────────────────────────────────────────── */
   function setLoading(on, text = 'Guardando…') {
@@ -521,7 +521,7 @@ body {
     const isInspiracion = activeTab === 'inspiracion';
     const container = document.getElementById('image-slots');
     container.innerHTML = '';
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 15; i++) {
       const isRequired = isInspiracion && i < 2;
       const slotEl = document.createElement('div');
       slotEl.className = 'img-slot';
@@ -576,8 +576,8 @@ body {
   /* ── Abrir formulario ────────────────────────────────────── */
   async function openForm(id) {
     editingId  = id || null;
-    slotUrls   = ['', '', '', ''];
-    slotFiles  = [null, null, null, null];
+    slotUrls   = Array(15).fill('');
+    slotFiles  = Array(15).fill(null);
 
     const isProyectos    = activeTab === 'proyectos';
     const isInspiracion  = !isProyectos;
@@ -655,7 +655,7 @@ body {
     // Validar mínimo 2 fotos en Inspiración
     if (isInspiracion) {
       let filledSlots = 0;
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 15; i++) {
         if (slotFiles[i] || (slotUrls[i] && slotUrls[i].startsWith('http'))) filledSlots++;
       }
       if (filledSlots < 2) {
@@ -674,7 +674,7 @@ body {
 
     // Subir archivos nuevos
     const finalImages = [];
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 15; i++) {
       if (slotFiles[i]) {
         const ext  = slotFiles[i].name.split('.').pop().toLowerCase();
         const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
