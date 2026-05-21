@@ -1305,22 +1305,6 @@ body::after {
   background-size: 200px 200px;
 }
 
-/* ---------- Prototype banner ---------- */
-.proto-banner {
-  position: fixed;
-  bottom: 16px;
-  left: 16px;
-  background: var(--text-primary);
-  color: var(--bg-primary);
-  padding: 8px 16px;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  z-index: 200;
-  font-weight: 500;
-  opacity: 0.7;
-}
-.proto-banner:hover { opacity: 1; }
 
 /* ── Protección de imágenes ─────────────────────────────────── */
 /* Desactiva menú de long-press en iOS y el callout de guardar  */
@@ -2079,7 +2063,6 @@ body::after {
   </div>
 </footer>
 
-<div class="proto-banner">Prototipo · estructura</div>
 
 <script>
 (function () {
@@ -2390,47 +2373,45 @@ body::after {
     });
   }
 
-  // ── Hero desde tabla hero_slides ─────────────────────────────
+  // ── Hero: imágenes aleatorias de proyectos publicados ────────
   async function loadHeroImages() {
-    const { data, error } = await sb
+    // 1. Intentar hero_slides (imágenes curadas desde el admin)
+    const { data: heroData } = await sb
       .from('hero_slides')
       .select('image_url, position')
       .order('position');
 
-    if (error || !data || data.length === 0) return;
-
     const slidesEl = document.getElementById('hero-slides');
     if (!slidesEl) return;
-
     const slides = [...slidesEl.querySelectorAll('.hero-slide')];
-    const urls   = data.map(r => r.image_url).filter(Boolean).slice(0, slides.length);
-    urls.forEach((url, i) => {
-      if (slides[i]) slides[i].style.backgroundImage = `url('${url}')`;
-    });
-  }
 
-  // ── Fallback: hero desde imágenes de proyectos ───────────────
-  function updateHeroWithRealImages(projects) {
-    // Solo se usa si hero_slides está vacío (fallback)
-    const allImages = projects
-      .flatMap(p => p.images || [])
-      .filter(Boolean);
+    if (heroData && heroData.length > 0) {
+      const urls = heroData.map(r => r.image_url).filter(Boolean).slice(0, slides.length);
+      urls.forEach((url, i) => {
+        if (slides[i]) slides[i].style.backgroundImage = `url('${url}')`;
+      });
+      return;
+    }
 
-    if (allImages.length < 2) return;
+    // 2. Fallback: imágenes aleatorias de proyectos publicados
+    const { data: projects } = await sb
+      .from('portfolio_projects')
+      .select('images')
+      .eq('is_published', true);
 
-    const slidesEl = document.getElementById('hero-slides');
-    if (!slidesEl) return;
+    if (!projects || projects.length === 0) return;
 
-    // No sobreescribir si ya cargaron imágenes del hero
-    const slides = [...slidesEl.querySelectorAll('.hero-slide')];
-    const alreadyLoaded = slides.some(s => s.style.backgroundImage && s.style.backgroundImage !== '');
-    if (alreadyLoaded) return;
+    const allImages = projects.flatMap(p => p.images || []).filter(Boolean);
+    if (allImages.length === 0) return;
 
     const shuffled = [...allImages].sort(() => Math.random() - 0.5).slice(0, slides.length);
     shuffled.forEach((url, i) => {
       if (slides[i]) slides[i].style.backgroundImage = `url('${url}')`;
     });
   }
+
+  // ── Sin uso directo — hero ya carga en init vía loadHeroImages
+  function updateHeroWithRealImages() {}
 
   // ── Module accordion ─────────────────────────────────────────
   document.querySelectorAll('.module-item').forEach(item =>
