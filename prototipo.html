@@ -2390,20 +2390,43 @@ body::after {
     });
   }
 
-  // ── Hero dinámico desde Supabase ─────────────────────────────
-  function updateHeroWithRealImages(projects) {
-    // Recopilar todas las imágenes de los proyectos, aplanar y mezclar
-    const allImages = projects
-      .flatMap(p => p.images || [])
-      .filter(Boolean);
+  // ── Hero desde tabla hero_slides ─────────────────────────────
+  async function loadHeroImages() {
+    const { data, error } = await sb
+      .from('hero_slides')
+      .select('image_url, position')
+      .order('position');
 
-    if (allImages.length < 2) return; // Necesita al menos 2 imágenes
+    if (error || !data || data.length === 0) return;
 
-    const shuffled = [...allImages].sort(() => Math.random() - 0.5).slice(0, 4);
     const slidesEl = document.getElementById('hero-slides');
     if (!slidesEl) return;
 
     const slides = [...slidesEl.querySelectorAll('.hero-slide')];
+    const urls   = data.map(r => r.image_url).filter(Boolean).slice(0, slides.length);
+    urls.forEach((url, i) => {
+      if (slides[i]) slides[i].style.backgroundImage = `url('${url}')`;
+    });
+  }
+
+  // ── Fallback: hero desde imágenes de proyectos ───────────────
+  function updateHeroWithRealImages(projects) {
+    // Solo se usa si hero_slides está vacío (fallback)
+    const allImages = projects
+      .flatMap(p => p.images || [])
+      .filter(Boolean);
+
+    if (allImages.length < 2) return;
+
+    const slidesEl = document.getElementById('hero-slides');
+    if (!slidesEl) return;
+
+    // No sobreescribir si ya cargaron imágenes del hero
+    const slides = [...slidesEl.querySelectorAll('.hero-slide')];
+    const alreadyLoaded = slides.some(s => s.style.backgroundImage && s.style.backgroundImage !== '');
+    if (alreadyLoaded) return;
+
+    const shuffled = [...allImages].sort(() => Math.random() - 0.5).slice(0, slides.length);
     shuffled.forEach((url, i) => {
       if (slides[i]) slides[i].style.backgroundImage = `url('${url}')`;
     });
@@ -2472,6 +2495,7 @@ body::after {
 
   // ── Init ─────────────────────────────────────────────────────
   showPage('home');
+  loadHeroImages(); // Carga hero desde tabla hero_slides
 
 })();
 </script>

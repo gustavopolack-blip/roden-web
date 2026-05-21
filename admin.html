@@ -238,6 +238,7 @@ body {
   <div class="tabs">
     <button class="tab-btn active" data-tab="proyectos">Proyectos</button>
     <button class="tab-btn" data-tab="inspiracion">Inspiración</button>
+    <button class="tab-btn" data-tab="hero">Hero</button>
   </div>
 
   <!-- ── LISTA ─────────────────────────────────────────────── -->
@@ -339,6 +340,23 @@ body {
     </div>
   </div>
 
+  <!-- ── HERO ─────────────────────────────────────────────────── -->
+  <div id="panel-hero" class="app-content hidden">
+    <div class="actions-bar">
+      <h2>Imágenes del Hero</h2>
+    </div>
+    <p style="font-size:13px;color:var(--text-3);margin-bottom:24px;line-height:1.6;">
+      Estas imágenes rotan en el slideshow del inicio. Podés cargar hasta 8 fotos.<br>
+      Se muestran en orden de posición (1 → 8).
+    </p>
+    <div class="image-slots" id="hero-slots"></div>
+    <div style="margin-top:32px;display:flex;align-items:center;gap:16px;">
+      <button class="btn btn-primary" id="hero-save-btn">Guardar cambios</button>
+      <span id="hero-save-msg" style="font-size:13px;color:var(--text-3);"></span>
+    </div>
+    <div id="hero-error" class="error-msg hidden" style="margin-top:16px;"></div>
+  </div>
+
 </div>
 
 <!-- ══ LOADING ══════════════════════════════════════════════════ -->
@@ -356,10 +374,15 @@ body {
   const sb = supabase.createClient(SB_URL, SB_KEY);
 
   /* ── Estado ─────────────────────────────────────────────── */
-  let activeTab  = 'proyectos';  // 'proyectos' | 'inspiracion'
+  let activeTab  = 'proyectos';  // 'proyectos' | 'inspiracion' | 'hero'
   let editingId  = null;
   let slotUrls   = Array(15).fill('');
   let slotFiles  = Array(15).fill(null);
+
+  // Hero
+  const HERO_MAX  = 8;
+  let heroUrls    = Array(HERO_MAX).fill('');
+  let heroFiles   = Array(HERO_MAX).fill(null);
 
   /* ── Loader ─────────────────────────────────────────────── */
   function setLoading(on, text = 'Guardando…') {
@@ -380,11 +403,19 @@ body {
   function showList() {
     document.getElementById('panel-list').classList.remove('hidden');
     document.getElementById('panel-form').classList.add('hidden');
+    document.getElementById('panel-hero').classList.add('hidden');
     renderList();
   }
   function showForm() {
     document.getElementById('panel-list').classList.add('hidden');
     document.getElementById('panel-form').classList.remove('hidden');
+    document.getElementById('panel-hero').classList.add('hidden');
+  }
+  function showHero() {
+    document.getElementById('panel-list').classList.add('hidden');
+    document.getElementById('panel-form').classList.add('hidden');
+    document.getElementById('panel-hero').classList.remove('hidden');
+    loadHeroAdmin();
   }
 
   /* ── Tabs ────────────────────────────────────────────────── */
@@ -392,7 +423,8 @@ body {
     btn.addEventListener('click', () => {
       activeTab = btn.dataset.tab;
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === activeTab));
-      showList();
+      if (activeTab === 'hero') showHero();
+      else showList();
     });
   });
 
@@ -715,6 +747,143 @@ body {
     } else {
       showList();
     }
+  }
+
+  /* ── Hero: cargar ────────────────────────────────────────── */
+  async function loadHeroAdmin() {
+    heroUrls  = Array(HERO_MAX).fill('');
+    heroFiles = Array(HERO_MAX).fill(null);
+    document.getElementById('hero-error').classList.add('hidden');
+    document.getElementById('hero-save-msg').textContent = '';
+
+    setLoading(true, 'Cargando hero…');
+    const { data } = await sb
+      .from('hero_slides')
+      .select('image_url, position')
+      .order('position');
+    setLoading(false);
+
+    if (data) {
+      data.forEach(row => {
+        if (row.position >= 0 && row.position < HERO_MAX) {
+          heroUrls[row.position] = row.image_url;
+        }
+      });
+    }
+
+    buildHeroSlots();
+  }
+
+  /* ── Hero: construir grid de slots ───────────────────────── */
+  function buildHeroSlots() {
+    const container = document.getElementById('hero-slots');
+    container.innerHTML = '';
+    for (let i = 0; i < HERO_MAX; i++) {
+      const slotEl = document.createElement('div');
+      slotEl.className = 'img-slot';
+      slotEl.id = 'hero-slot-' + i;
+      slotEl.innerHTML = `
+        <input type="file" accept="image/jpeg,image/png,image/webp" data-slot="${i}">
+        <img class="img-slot-preview hidden" alt="">
+        <div class="img-slot-placeholder">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 15l4-4 3 3 3-4 4 5H3z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="6.5" r="1.5" stroke="currentColor" stroke-width="1.2"/><rect x="1.5" y="1.5" width="17" height="17" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>
+          Foto ${i + 1}
+        </div>
+        <button type="button" class="img-slot-remove" data-slot="${i}">×</button>
+        <span class="img-slot-num">${i + 1}</span>`;
+      container.appendChild(slotEl);
+
+      if (heroUrls[i]) setHeroSlotUrl(i, heroUrls[i]);
+
+      slotEl.querySelector('input[type="file"]').addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        heroFiles[i] = file;
+        setHeroSlotUrl(i, URL.createObjectURL(file));
+      });
+      slotEl.querySelector('.img-slot-remove').addEventListener('click', e => {
+        e.stopPropagation();
+        clearHeroSlot(i);
+      });
+    }
+  }
+
+  function setHeroSlotUrl(i, url) {
+    heroUrls[i] = url;
+    const slot    = document.getElementById('hero-slot-' + i);
+    const preview = slot.querySelector('.img-slot-preview');
+    preview.src   = url;
+    preview.classList.remove('hidden');
+    slot.classList.add('has-image');
+  }
+
+  function clearHeroSlot(i) {
+    heroUrls[i]  = '';
+    heroFiles[i] = null;
+    const slot    = document.getElementById('hero-slot-' + i);
+    const preview = slot.querySelector('.img-slot-preview');
+    const input   = slot.querySelector('input[type="file"]');
+    preview.src   = '';
+    preview.classList.add('hidden');
+    slot.classList.remove('has-image');
+    input.value = '';
+  }
+
+  /* ── Hero: guardar ────────────────────────────────────────── */
+  document.getElementById('hero-save-btn').addEventListener('click', saveHeroSlides);
+
+  async function saveHeroSlides() {
+    const errEl = document.getElementById('hero-error');
+    const msgEl = document.getElementById('hero-save-msg');
+    errEl.classList.add('hidden');
+    msgEl.textContent = '';
+
+    const hasImages = heroUrls.some((u, i) => heroFiles[i] || (u && u.startsWith('http')));
+    if (!hasImages) {
+      errEl.textContent = 'Agregá al menos una imagen.';
+      errEl.classList.remove('hidden');
+      return;
+    }
+
+    setLoading(true, 'Subiendo imágenes…');
+
+    const rows = [];
+    for (let i = 0; i < HERO_MAX; i++) {
+      if (heroFiles[i]) {
+        const ext  = heroFiles[i].name.split('.').pop().toLowerCase();
+        const path = `hero/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error: upErr } = await sb.storage
+          .from('project-images')
+          .upload(path, heroFiles[i], { cacheControl: '31536000' });
+        if (!upErr) {
+          const { data: { publicUrl } } = sb.storage.from('project-images').getPublicUrl(path);
+          rows.push({ position: i, image_url: publicUrl });
+        }
+      } else if (heroUrls[i] && heroUrls[i].startsWith('http')) {
+        rows.push({ position: i, image_url: heroUrls[i] });
+      }
+    }
+
+    setLoading(true, 'Guardando…');
+
+    // Reemplazar todo el contenido de la tabla
+    await sb.from('hero_slides').delete().gte('position', 0);
+
+    if (rows.length > 0) {
+      const { error: dbError } = await sb.from('hero_slides').insert(rows);
+      setLoading(false);
+      if (dbError) {
+        errEl.textContent = 'Error al guardar: ' + dbError.message;
+        errEl.classList.remove('hidden');
+        return;
+      }
+    } else {
+      setLoading(false);
+    }
+
+    heroFiles = Array(HERO_MAX).fill(null);
+    msgEl.textContent = '✓ Hero actualizado';
+    setTimeout(() => { msgEl.textContent = ''; }, 3000);
   }
 
   /* ── Init ────────────────────────────────────────────────── */
