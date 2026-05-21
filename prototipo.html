@@ -584,7 +584,7 @@ main.home-active { padding-top: 0; } /* hero is full-bleed in home */
   margin-bottom: 48px;
 }
 @media (min-width: 768px) { .project-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; } }
-@media (min-width: 1024px) { .project-grid { grid-template-columns: repeat(3, 1fr); gap: 32px; } }
+@media (min-width: 1024px) { .project-grid { grid-template-columns: repeat(2, 1fr); gap: 40px; } }
 
 .project-card .photo-placeholder {
   aspect-ratio: 4 / 3;
@@ -1458,49 +1458,8 @@ body::after {
         <p class="section-intro t-body-l">Equipamientos integrales y ambientes específicos diseñados y fabricados por <span class="brand">rødën</span>.</p>
       </div>
 
-      <div class="project-grid">
-        <article class="project-card reveal">
-          <div class="photo-placeholder has-photo" style="background-image: url('Fotos%20de%20proyectos/foto%201.png');">Foto 4:3</div>
-          <div class="label-line">Equipamiento integral · 2025</div>
-          <h3>Departamento en Belgrano</h3>
-          <p class="project-desc">Cocina, vestidor, biblioteca y dormitorios.</p>
-          <button class="link-arrow">Ver proyecto →</button>
-        </article>
-        <article class="project-card reveal">
-          <div class="photo-placeholder has-photo" style="background-image: url('Fotos%20de%20proyectos/foto%202.png');">Foto 4:3</div>
-          <div class="label-line">Ambiente completo · 2025</div>
-          <h3>Cocina en Palermo</h3>
-          <p class="project-desc">Diseño, fabricación e instalación integral.</p>
-          <button class="link-arrow">Ver proyecto →</button>
-        </article>
-        <article class="project-card reveal">
-          <div class="photo-placeholder has-photo" style="background-image: url('Fotos%20de%20proyectos/foto%203.png');">Foto 4:3</div>
-          <div class="label-line">Equipamiento integral · 2024</div>
-          <h3>Casa en Pilar</h3>
-          <p class="project-desc">Equipamiento completo de planta baja y dormitorios.</p>
-          <button class="link-arrow">Ver proyecto →</button>
-        </article>
-        <article class="project-card reveal">
-          <div class="photo-placeholder has-photo" style="background-image: url('Fotos%20de%20proyectos/foto%204.png');">Foto 4:3</div>
-          <div class="label-line">Ambiente completo · 2024</div>
-          <h3>Vestidor en Recoleta</h3>
-          <p class="project-desc">Walk-in vestidor con isla central y zona maquillaje.</p>
-          <button class="link-arrow">Ver proyecto →</button>
-        </article>
-        <article class="project-card reveal">
-          <div class="photo-placeholder has-photo" style="background-image: url('Fotos%20de%20proyectos/foto%205.png');">Foto 4:3</div>
-          <div class="label-line">Pieza puntual · 2024</div>
-          <h3>Biblioteca con TV integrada</h3>
-          <p class="project-desc">Pieza única con resolución de cableado oculto.</p>
-          <button class="link-arrow">Ver proyecto →</button>
-        </article>
-        <article class="project-card reveal">
-          <div class="photo-placeholder has-photo" style="background-image: url('Fotos%20de%20proyectos/foto%206.png');">Foto 4:3</div>
-          <div class="label-line">Equipamiento integral · 2023</div>
-          <h3>PH en Villa Crespo</h3>
-          <p class="project-desc">Reforma integral con equipamiento completo a medida.</p>
-          <button class="link-arrow">Ver proyecto →</button>
-        </article>
+      <div class="project-grid" id="home-proyectos-grid">
+        <div id="home-proyectos-loading" style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--text-tertiary);font-size:14px;letter-spacing:.08em;">Cargando proyectos…</div>
       </div>
 
       <div class="reveal" style="text-align: center;">
@@ -2210,7 +2169,7 @@ body::after {
     lenis.scrollTo(0, { immediate: true });
     requestAnimationFrame(() => {
       initReveals();
-      if (name === 'home')      animateHero();
+      if (name === 'home')      { animateHero(); loadHomeProyectos(); }
       if (name === 'proyectos')   loadProyectos();
       if (name === 'inspiracion') loadInspiracion();
     });
@@ -2332,6 +2291,65 @@ body::after {
   }
 
   // ── Proyectos desde Supabase ─────────────────────────────────
+  // ── Home: Proyectos seleccionados (últimos 4 publicados) ─────
+  let homeProyectosLoaded = false;
+
+  async function loadHomeProyectos() {
+    if (homeProyectosLoaded) { initReveals(); return; }
+
+    const grid    = document.getElementById('home-proyectos-grid');
+    const loading = document.getElementById('home-proyectos-loading');
+    if (!grid) return;
+
+    const { data: projects, error } = await sb
+      .from('portfolio_projects')
+      .select('id, title, tipo, anio, comment, images')
+      .eq('is_published', true)
+      .order('created_at', { ascending: false })
+      .limit(4);
+
+    if (error || !projects || projects.length === 0) {
+      if (loading) loading.textContent = 'No hay proyectos publicados todavía.';
+      return;
+    }
+
+    grid.innerHTML = projects.map(p => {
+      const imgs  = (p.images || []).filter(Boolean);
+      const meta  = [p.tipo, p.anio].filter(Boolean).join(' · ');
+      const waMsg = encodeURIComponent(`Hola Gustavo. Vi el proyecto "${p.title}" en el sitio de rødën y me gustaría conversar sobre algo similar.`);
+
+      const slidesHtml = imgs.length > 0
+        ? imgs.map((url, i) => `<div class="card-slide${i === 0 ? ' active kb-a' : ''}" style="background-image:url('${url}')"></div>`).join('')
+        : '<div class="card-slide active"></div>';
+
+      const dotsHtml = imgs.length > 1
+        ? `<div class="card-slide-dots">${imgs.map((_, i) => `<span class="card-dot${i === 0 ? ' active' : ''}"></span>`).join('')}</div>`
+        : '';
+
+      return `
+        <article class="project-card reveal">
+          <div class="card-slideshow" data-slide-count="${imgs.length}">
+            ${slidesHtml}
+            ${dotsHtml}
+            ${imgs.length === 0 ? '<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#999">Foto próximamente</span>' : ''}
+          </div>
+          <div class="label-line">${meta || 'rødën'}</div>
+          <h3>${p.title}</h3>
+          ${p.comment ? `<p class="project-desc">${p.comment}</p>` : ''}
+          <a class="link-arrow" href="https://wa.me/5491145047893?text=${waMsg}" target="_blank" rel="noopener">
+            Consultá por este proyecto →
+          </a>
+        </article>`;
+    }).join('');
+
+    homeProyectosLoaded = true;
+
+    requestAnimationFrame(() => {
+      initReveals();
+      initCardSlideshows();
+    });
+  }
+
   let proyectosLoaded = false;
 
   async function loadProyectos() {
