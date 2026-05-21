@@ -345,16 +345,36 @@ body {
     <div class="actions-bar">
       <h2>Imágenes del Hero</h2>
     </div>
-    <p style="font-size:13px;color:var(--text-3);margin-bottom:24px;line-height:1.6;">
-      Estas imágenes rotan en el slideshow del inicio. Podés cargar hasta 8 fotos.<br>
-      Se muestran en orden de posición (1 → 8).
-    </p>
-    <div class="image-slots" id="hero-slots"></div>
-    <div style="margin-top:32px;display:flex;align-items:center;gap:16px;">
-      <button class="btn btn-primary" id="hero-save-btn">Guardar cambios</button>
-      <span id="hero-save-msg" style="font-size:13px;color:var(--text-3);"></span>
+
+    <!-- Desktop -->
+    <div style="margin-bottom:56px;padding-bottom:48px;border-bottom:1px solid var(--border);">
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px;">
+        <h3 style="font-size:15px;font-weight:600;margin:0;">Desktop</h3>
+        <span style="font-size:12px;color:var(--text-3);">Formato horizontal · hasta 8 fotos</span>
+      </div>
+      <p style="font-size:13px;color:var(--text-3);margin-bottom:20px;">Se muestran en orden de posición (1 → 8).</p>
+      <div class="image-slots" id="hero-slots"></div>
+      <div style="margin-top:24px;display:flex;align-items:center;gap:16px;">
+        <button class="btn btn-primary" id="hero-save-btn">Guardar Desktop</button>
+        <span id="hero-save-msg" style="font-size:13px;color:var(--text-3);"></span>
+      </div>
+      <div id="hero-error" class="error-msg hidden" style="margin-top:16px;"></div>
     </div>
-    <div id="hero-error" class="error-msg hidden" style="margin-top:16px;"></div>
+
+    <!-- Mobile -->
+    <div>
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px;">
+        <h3 style="font-size:15px;font-weight:600;margin:0;">Mobile</h3>
+        <span style="font-size:12px;color:var(--text-3);">Formato vertical · hasta 8 fotos</span>
+      </div>
+      <p style="font-size:13px;color:var(--text-3);margin-bottom:20px;">Si no subís fotos mobile, se muestran las mismas que desktop.</p>
+      <div class="image-slots" id="hero-mobile-slots"></div>
+      <div style="margin-top:24px;display:flex;align-items:center;gap:16px;">
+        <button class="btn btn-primary" id="hero-mobile-save-btn">Guardar Mobile</button>
+        <span id="hero-mobile-save-msg" style="font-size:13px;color:var(--text-3);"></span>
+      </div>
+      <div id="hero-mobile-error" class="error-msg hidden" style="margin-top:16px;"></div>
+    </div>
   </div>
 
 </div>
@@ -380,9 +400,11 @@ body {
   let slotFiles  = Array(15).fill(null);
 
   // Hero
-  const HERO_MAX  = 8;
-  let heroUrls    = Array(HERO_MAX).fill('');
-  let heroFiles   = Array(HERO_MAX).fill(null);
+  const HERO_MAX       = 8;
+  let heroUrls         = Array(HERO_MAX).fill('');
+  let heroFiles        = Array(HERO_MAX).fill(null);
+  let heroMobileUrls   = Array(HERO_MAX).fill('');
+  let heroMobileFiles  = Array(HERO_MAX).fill(null);
 
   /* ── Loader ─────────────────────────────────────────────── */
   function setLoading(on, text = 'Guardando…') {
@@ -749,29 +771,37 @@ body {
     }
   }
 
-  /* ── Hero: cargar ────────────────────────────────────────── */
+  /* ── Hero: cargar (desktop + mobile) ────────────────────── */
   async function loadHeroAdmin() {
-    heroUrls  = Array(HERO_MAX).fill('');
-    heroFiles = Array(HERO_MAX).fill(null);
+    heroUrls        = Array(HERO_MAX).fill('');
+    heroFiles       = Array(HERO_MAX).fill(null);
+    heroMobileUrls  = Array(HERO_MAX).fill('');
+    heroMobileFiles = Array(HERO_MAX).fill(null);
     document.getElementById('hero-error').classList.add('hidden');
     document.getElementById('hero-save-msg').textContent = '';
+    document.getElementById('hero-mobile-error').classList.add('hidden');
+    document.getElementById('hero-mobile-save-msg').textContent = '';
 
     setLoading(true, 'Cargando hero…');
-    const { data } = await sb
-      .from('hero_slides')
-      .select('image_url, position')
-      .order('position');
+    const [{ data: deskData }, { data: mobileData }] = await Promise.all([
+      sb.from('hero_slides').select('image_url, position').order('position'),
+      sb.from('hero_slides_mobile').select('image_url, position').order('position'),
+    ]);
     setLoading(false);
 
-    if (data) {
-      data.forEach(row => {
-        if (row.position >= 0 && row.position < HERO_MAX) {
-          heroUrls[row.position] = row.image_url;
-        }
+    if (deskData) {
+      deskData.forEach(row => {
+        if (row.position >= 0 && row.position < HERO_MAX) heroUrls[row.position] = row.image_url;
+      });
+    }
+    if (mobileData) {
+      mobileData.forEach(row => {
+        if (row.position >= 0 && row.position < HERO_MAX) heroMobileUrls[row.position] = row.image_url;
       });
     }
 
     buildHeroSlots();
+    buildHeroMobileSlots();
   }
 
   /* ── Hero: construir grid de slots ───────────────────────── */
@@ -827,6 +857,105 @@ body {
     preview.classList.add('hidden');
     slot.classList.remove('has-image');
     input.value = '';
+  }
+
+  /* ── Hero Mobile: construir slots ───────────────────────── */
+  function buildHeroMobileSlots() {
+    const container = document.getElementById('hero-mobile-slots');
+    container.innerHTML = '';
+    for (let i = 0; i < HERO_MAX; i++) {
+      const slotEl = document.createElement('div');
+      slotEl.className = 'img-slot';
+      slotEl.id = 'hero-mobile-slot-' + i;
+      slotEl.innerHTML = `
+        <input type="file" accept="image/jpeg,image/png,image/webp" data-slot="${i}">
+        <img class="img-slot-preview hidden" alt="">
+        <div class="img-slot-placeholder">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 15l4-4 3 3 3-4 4 5H3z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="6.5" r="1.5" stroke="currentColor" stroke-width="1.2"/><rect x="1.5" y="1.5" width="17" height="17" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>
+          Foto ${i + 1}
+        </div>
+        <button type="button" class="img-slot-remove" data-slot="${i}">×</button>
+        <span class="img-slot-num">${i + 1}</span>`;
+      container.appendChild(slotEl);
+
+      if (heroMobileUrls[i]) setHeroMobileSlotUrl(i, heroMobileUrls[i]);
+
+      slotEl.querySelector('input[type="file"]').addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        heroMobileFiles[i] = file;
+        setHeroMobileSlotUrl(i, URL.createObjectURL(file));
+      });
+      slotEl.querySelector('.img-slot-remove').addEventListener('click', e => {
+        e.stopPropagation();
+        clearHeroMobileSlot(i);
+      });
+    }
+  }
+
+  function setHeroMobileSlotUrl(i, url) {
+    heroMobileUrls[i] = url;
+    const slot    = document.getElementById('hero-mobile-slot-' + i);
+    const preview = slot.querySelector('.img-slot-preview');
+    preview.src   = url;
+    preview.classList.remove('hidden');
+    slot.classList.add('has-image');
+  }
+
+  function clearHeroMobileSlot(i) {
+    heroMobileUrls[i]  = '';
+    heroMobileFiles[i] = null;
+    const slot    = document.getElementById('hero-mobile-slot-' + i);
+    const preview = slot.querySelector('.img-slot-preview');
+    const input   = slot.querySelector('input[type="file"]');
+    preview.src   = '';
+    preview.classList.add('hidden');
+    slot.classList.remove('has-image');
+    input.value = '';
+  }
+
+  /* ── Hero Mobile: guardar ─────────────────────────────────── */
+  document.getElementById('hero-mobile-save-btn').addEventListener('click', saveHeroMobileSlides);
+
+  async function saveHeroMobileSlides() {
+    const errEl = document.getElementById('hero-mobile-error');
+    const msgEl = document.getElementById('hero-mobile-save-msg');
+    errEl.classList.add('hidden');
+    msgEl.textContent = '';
+
+    setLoading(true, 'Subiendo imágenes mobile…');
+    const rows = [];
+    for (let i = 0; i < HERO_MAX; i++) {
+      if (heroMobileFiles[i]) {
+        const ext  = heroMobileFiles[i].name.split('.').pop().toLowerCase();
+        const path = `hero-mobile/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error: upErr } = await sb.storage
+          .from('project-images').upload(path, heroMobileFiles[i], { cacheControl: '31536000' });
+        if (!upErr) {
+          const { data: { publicUrl } } = sb.storage.from('project-images').getPublicUrl(path);
+          rows.push({ position: i, image_url: publicUrl });
+        }
+      } else if (heroMobileUrls[i] && heroMobileUrls[i].startsWith('http')) {
+        rows.push({ position: i, image_url: heroMobileUrls[i] });
+      }
+    }
+
+    setLoading(true, 'Guardando mobile…');
+    await sb.from('hero_slides_mobile').delete().gte('position', 0);
+    if (rows.length > 0) {
+      const { error: dbError } = await sb.from('hero_slides_mobile').insert(rows);
+      setLoading(false);
+      if (dbError) {
+        errEl.textContent = 'Error al guardar: ' + dbError.message;
+        errEl.classList.remove('hidden');
+        return;
+      }
+    } else {
+      setLoading(false);
+    }
+    heroMobileFiles = Array(HERO_MAX).fill(null);
+    msgEl.textContent = '✓ Hero mobile actualizado';
+    setTimeout(() => { msgEl.textContent = ''; }, 3000);
   }
 
   /* ── Hero: guardar ────────────────────────────────────────── */

@@ -359,6 +359,12 @@ main.home-active { padding-top: 0; } /* hero is full-bleed in home */
   z-index: 0;
   overflow: hidden;
 }
+/* Desktop visible por defecto; mobile se oculta */
+.hero-slides-mobile { display: none; }
+@media (max-width: 767px) {
+  .hero-slides-desktop { display: none; }
+  .hero-slides-mobile  { display: block; }
+}
 .hero-slide {
   position: absolute;
   inset: 0;
@@ -1368,7 +1374,18 @@ body::after {
 <section class="page active" id="page-home">
 
   <div class="hero">
-    <div class="hero-slides" id="hero-slides">
+    <div class="hero-slides hero-slides-desktop" id="hero-slides-desktop">
+      <div class="hero-slide kb-1 active"></div>
+      <div class="hero-slide"></div>
+      <div class="hero-slide"></div>
+      <div class="hero-slide"></div>
+      <div class="hero-slide"></div>
+      <div class="hero-slide"></div>
+      <div class="hero-slide"></div>
+      <div class="hero-slide"></div>
+      <div class="hero-gradient"></div>
+    </div>
+    <div class="hero-slides hero-slides-mobile" id="hero-slides-mobile">
       <div class="hero-slide kb-1 active"></div>
       <div class="hero-slide"></div>
       <div class="hero-slide"></div>
@@ -2247,38 +2264,38 @@ body::after {
   }
 
   // ── Hero slideshow (Ken Burns) ───────────────────────────────
-  let slideshowTimer = null;
+  let slideshowTimerDesktop = null;
+  let slideshowTimerMobile  = null;
   const kbClasses = ['kb-1', 'kb-2', 'kb-3', 'kb-4'];
 
-  function initHeroSlideshow() {
-    clearInterval(slideshowTimer);
-    const slides = [...document.querySelectorAll('#hero-slides .hero-slide')];
-    if (slides.length < 2) return;
+  function startSlideshow(containerId) {
+    const slides = [...document.querySelectorAll(`#${containerId} .hero-slide`)];
+    if (slides.length < 2) return null;
     let current = 0;
-
-    // Activar primer slide
     slides.forEach((s, i) => {
       s.classList.toggle('active', i === 0);
-      if (i === 0) { s.classList.add('kb-1'); }
+      if (i === 0) s.classList.add('kb-1');
     });
-
-    slideshowTimer = setInterval(() => {
+    return setInterval(() => {
       const prev = current;
       const next = (current + 1) % slides.length;
       const kbClass = kbClasses[next % kbClasses.length];
-
-      // Preparar Ken Burns en el siguiente slide antes de mostrarlo
       slides[next].classList.remove(...kbClasses);
       slides[next].style.animation = 'none';
       slides[next].offsetHeight; // force reflow
       slides[next].classList.add(kbClass);
       slides[next].style.animation = '';
-
       slides[next].classList.add('active');
       setTimeout(() => slides[prev].classList.remove('active'), 1800);
-
       current = next;
     }, 6000);
+  }
+
+  function initHeroSlideshow() {
+    if (slideshowTimerDesktop) clearInterval(slideshowTimerDesktop);
+    if (slideshowTimerMobile)  clearInterval(slideshowTimerMobile);
+    slideshowTimerDesktop = startSlideshow('hero-slides-desktop');
+    slideshowTimerMobile  = startSlideshow('hero-slides-mobile');
   }
 
   // ── Hero word-by-word entrance ───────────────────────────────
@@ -2422,41 +2439,49 @@ body::after {
     });
   }
 
-  // ── Hero: imágenes aleatorias de proyectos publicados ────────
+  // ── Hero: carga desktop y mobile desde Supabase ──────────────
   async function loadHeroImages() {
-    // 1. Intentar hero_slides (imágenes curadas desde el admin)
-    const { data: heroData } = await sb
-      .from('hero_slides')
-      .select('image_url, position')
-      .order('position');
+    const slidesDesktop = [...document.querySelectorAll('#hero-slides-desktop .hero-slide')];
+    const slidesMobile  = [...document.querySelectorAll('#hero-slides-mobile .hero-slide')];
 
-    const slidesEl = document.getElementById('hero-slides');
-    if (!slidesEl) return;
-    const slides = [...slidesEl.querySelectorAll('.hero-slide')];
-
-    if (heroData && heroData.length > 0) {
-      const urls = heroData.map(r => r.image_url).filter(Boolean).slice(0, slides.length);
-      urls.forEach((url, i) => {
-        if (slides[i]) slides[i].style.backgroundImage = `url('${url}')`;
-      });
-      return;
+    // Fallback compartido: imágenes de proyectos publicados
+    async function getProjectImages() {
+      const { data } = await sb.from('portfolio_projects').select('images').eq('is_published', true);
+      if (!data || data.length === 0) return [];
+      return [...data.flatMap(p => p.images || []).filter(Boolean)]
+        .sort(() => Math.random() - 0.5);
     }
 
-    // 2. Fallback: imágenes aleatorias de proyectos publicados
-    const { data: projects } = await sb
-      .from('portfolio_projects')
-      .select('images')
-      .eq('is_published', true);
+    // ── Desktop ───────────────────────────────────────────────
+    const { data: deskData } = await sb
+      .from('hero_slides').select('image_url, position').order('position');
 
-    if (!projects || projects.length === 0) return;
+    if (deskData && deskData.length > 0) {
+      deskData.map(r => r.image_url).filter(Boolean).forEach((url, i) => {
+        if (slidesDesktop[i]) slidesDesktop[i].style.backgroundImage = `url('${url}')`;
+      });
+    } else {
+      const imgs = await getProjectImages();
+      imgs.forEach((url, i) => {
+        if (slidesDesktop[i]) slidesDesktop[i].style.backgroundImage = `url('${url}')`;
+      });
+    }
 
-    const allImages = projects.flatMap(p => p.images || []).filter(Boolean);
-    if (allImages.length === 0) return;
+    // ── Mobile ────────────────────────────────────────────────
+    const { data: mobileData } = await sb
+      .from('hero_slides_mobile').select('image_url, position').order('position');
 
-    const shuffled = [...allImages].sort(() => Math.random() - 0.5).slice(0, slides.length);
-    shuffled.forEach((url, i) => {
-      if (slides[i]) slides[i].style.backgroundImage = `url('${url}')`;
-    });
+    if (mobileData && mobileData.length > 0) {
+      mobileData.map(r => r.image_url).filter(Boolean).forEach((url, i) => {
+        if (slidesMobile[i]) slidesMobile[i].style.backgroundImage = `url('${url}')`;
+      });
+    } else {
+      // Sin mobile configurado: usa las mismas que desktop
+      slidesDesktop.forEach((dSlide, i) => {
+        if (slidesMobile[i] && dSlide.style.backgroundImage)
+          slidesMobile[i].style.backgroundImage = dSlide.style.backgroundImage;
+      });
+    }
   }
 
   // ── Sin uso directo — hero ya carga en init vía loadHeroImages
