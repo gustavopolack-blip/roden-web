@@ -2395,8 +2395,9 @@ body::after {
 
   function applyLang() {
     const Tr = T[lang];
-    const set = (sel, key, root) => { (root||document).querySelectorAll(sel).forEach(el => { if (Tr[key] !== undefined) el.textContent = Tr[key]; }); };
-    const html = (sel, key, root) => { (root||document).querySelectorAll(sel).forEach(el => { if (Tr[key] !== undefined) el.innerHTML = Tr[key]; }); };
+    const brandify = s => s.replace(/rødën/g, '<span class="brand">rødën</span>');
+    const set  = (sel, key, root) => { (root||document).querySelectorAll(sel).forEach(el => { if (Tr[key] !== undefined) el.innerHTML = brandify(Tr[key]); }); };
+    const html = (sel, key, root) => { (root||document).querySelectorAll(sel).forEach(el => { if (Tr[key] !== undefined) el.innerHTML = brandify(Tr[key]); }); };
 
     // Nav (scoped to nav elements only, not CTA buttons)
     document.querySelectorAll('.nav-desktop .nav-link, .mobile-menu .nav-link').forEach(btn => {
@@ -2419,10 +2420,13 @@ body::after {
       set('p',  `puntos.0${i+1}.p`,  puntos[i]);
     });
     set('#page-home .tres-puntos-cta .link-arrow', 'puntos.cta');
-    set('#page-home .section .section-header .t-h2', 'proyh.h2');
-    set('#page-home .section .section-header .section-intro', 'proyh.intro');
-    const proyAllBtn = document.querySelector('#page-home .section .link-arrow[data-page="proyectos"]');
-    if (proyAllBtn) proyAllBtn.textContent = Tr['proyh.cta'];
+    const proyHomeSection = document.getElementById('home-proyectos-grid')?.closest('section');
+    if (proyHomeSection) {
+      set('.section-header .t-h2', 'proyh.h2', proyHomeSection);
+      set('.section-header .section-intro', 'proyh.intro', proyHomeSection);
+      const proyAllBtn = proyHomeSection.querySelector('.link-arrow[data-page="proyectos"]');
+      if (proyAllBtn) proyAllBtn.textContent = Tr['proyh.cta'];
+    }
     // Sistema
     const sisSection = document.querySelector('#page-home section[style*="bg-elevated"], #page-home .sistema-modules')?.closest('section') || document.querySelectorAll('#page-home .section')[2];
     if (sisSection) {
@@ -2462,12 +2466,12 @@ body::after {
     set('#page-estudio .frase-grande', 'est.frase-grande');
     set('#page-estudio .frase-aclar', 'est.frase-aclar');
     const bioPs = document.querySelectorAll('#page-estudio .bio-text p:not(.cargo)');
-    ['est.bio.p1','est.bio.p2','est.bio.p3'].forEach((k, i) => { if (bioPs[i] && Tr[k]) bioPs[i].textContent = Tr[k]; });
+    ['est.bio.p1','est.bio.p2','est.bio.p3'].forEach((k, i) => { if (bioPs[i] && Tr[k]) bioPs[i].innerHTML = brandify(Tr[k]); });
     set('#page-estudio .servicio-block .t-h2', 'est.serv.h2');
     set('#page-estudio .frase-fuerte', 'est.serv.frase');
     const pasos = document.querySelectorAll('#page-estudio .pasos');
-    if (pasos[0]) pasos[0].textContent = Tr['est.serv.p1'];
-    if (pasos[1]) pasos[1].textContent = Tr['est.serv.p2'];
+    if (pasos[0]) pasos[0].innerHTML = brandify(Tr['est.serv.p1']);
+    if (pasos[1]) pasos[1].innerHTML = brandify(Tr['est.serv.p2']);
     set('#page-estudio .frase-cierre', 'est.serv.cierre');
     set('#page-estudio .section:has(.taller-photo) .t-h2', 'est.tall.h2');
     set('#page-estudio .taller-text', 'est.tall.p');
@@ -2500,12 +2504,12 @@ body::after {
       item.querySelectorAll('.grupo').forEach((g, j) => {
         const gk = ['qh','qe','qd','val'][j];
         set('.grupo-label', `${mk}.${gk}.label`, g);
-        const p = g.querySelector('p, .valor-destacado'); if (p && Tr[`${mk}.${gk}.p`]) p.textContent = Tr[`${mk}.${gk}.p`];
+        const p = g.querySelector('p, .valor-destacado'); if (p && Tr[`${mk}.${gk}.p`]) p.innerHTML = brandify(Tr[`${mk}.${gk}.p`]);
       });
     });
     set('#page-proceso .responsabilidad h2', 'proc.resp.h2');
     const respPs = document.querySelectorAll('#page-proceso .responsabilidad p');
-    ['proc.resp.p1','proc.resp.p2','proc.resp.p3'].forEach((k, i) => { if (respPs[i] && Tr[k]) respPs[i].textContent = Tr[k]; });
+    ['proc.resp.p1','proc.resp.p2','proc.resp.p3'].forEach((k, i) => { if (respPs[i] && Tr[k]) respPs[i].innerHTML = brandify(Tr[k]); });
     set('#page-proceso .filtro-q', 'proc.filtro.q');
     const filtroCols = document.querySelectorAll('#page-proceso .filtro-cols > div');
     if (filtroCols[0]) {
