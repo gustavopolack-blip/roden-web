@@ -299,6 +299,9 @@ header.transparent .hamburger span { background: #FFF; }
   transition: transform 200ms ease-out, background 200ms ease-out, opacity 200ms ease-out;
 }
 .wa-float svg { width: 28px; height: 28px; }
+@media (max-width: 767px) {
+  .wa-float { bottom: 16px; }
+}
 @media (hover: hover) and (pointer: fine) {
   .wa-float:hover {
     background: rgba(0, 0, 0, 0.95);
@@ -431,7 +434,7 @@ main.home-active { padding-top: 0; } /* hero is full-bleed in home */
   .hero { height: 100vh; height: 100svh; }
 }
 .hero-content {
-  padding: 0 24px 64px; /* bottom más alto para dejar espacio al scroll-hint */
+  padding: 0 24px 90px; /* bottom: espacio para CTAs + botón WA flotante en mobile */
   width: 100%;
   z-index: 2;
 }
