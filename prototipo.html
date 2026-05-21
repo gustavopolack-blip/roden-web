@@ -2339,29 +2339,29 @@ body::after {
   }
 
   // ── Proyectos desde Supabase ─────────────────────────────────
-  // ── Home: Proyectos seleccionados (últimos 4 publicados) ─────
-  let homeProyectosLoaded = false;
-
+  // ── Home: Proyectos seleccionados (4 aleatorios de publicados) ─
   async function loadHomeProyectos() {
-    if (homeProyectosLoaded) { initReveals(); return; }
-
     const grid    = document.getElementById('home-proyectos-grid');
     const loading = document.getElementById('home-proyectos-loading');
     if (!grid) return;
 
+    // Mostrar loading cada vez que se vuelve a home
+    grid.innerHTML = '<div id="home-proyectos-loading" style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--text-tertiary);font-size:14px;letter-spacing:.08em;">Cargando proyectos…</div>';
+
     const { data: projects, error } = await sb
       .from('portfolio_projects')
       .select('id, title, tipo, anio, comment, images')
-      .eq('is_published', true)
-      .order('created_at', { ascending: false })
-      .limit(4);
+      .eq('is_published', true);
 
     if (error || !projects || projects.length === 0) {
-      if (loading) loading.textContent = 'No hay proyectos publicados todavía.';
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--text-tertiary);font-size:14px;letter-spacing:.08em;">No hay proyectos publicados todavía.</div>';
       return;
     }
 
-    grid.innerHTML = projects.map(p => {
+    // Shuffle y tomar 4 aleatorios
+    const selection = [...projects].sort(() => Math.random() - 0.5).slice(0, 4);
+
+    grid.innerHTML = selection.map(p => {
       const imgs  = (p.images || []).filter(Boolean);
       const meta  = [p.tipo, p.anio].filter(Boolean).join(' · ');
       const waMsg = encodeURIComponent(`Hola Gustavo. Vi el proyecto "${p.title}" en el sitio de rødën y me gustaría conversar sobre algo similar.`);
@@ -2389,8 +2389,6 @@ body::after {
           </a>
         </article>`;
     }).join('');
-
-    homeProyectosLoaded = true;
 
     requestAnimationFrame(() => {
       initReveals();
