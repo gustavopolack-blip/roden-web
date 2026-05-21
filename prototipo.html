@@ -1270,6 +1270,15 @@ header { view-transition-name: site-header; }
   margin-bottom: 16px;
   cursor: pointer;
 }
+/* Full-bleed en mobile: la imagen sangra al borde de pantalla */
+@media (max-width: 767px) {
+  .project-card .card-slideshow {
+    margin-left: -24px;
+    margin-right: -24px;
+    width: calc(100% + 48px);
+    aspect-ratio: 3 / 2;
+  }
+}
 .proyectos-list .card-slideshow { margin-bottom: 24px; }
 .card-slide {
   position: absolute;
