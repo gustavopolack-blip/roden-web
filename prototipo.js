@@ -610,30 +610,30 @@
       .to(ctas, { opacity: 1,    y: 0, duration: 0.6  }, '-=0.35');
   }
 
-  // ── Proyectos desde Supabase ─────────────────────────────────
-  // ── Home: Proyectos seleccionados (4 aleatorios de publicados) ─
+  // ── Home: Proyectos destacados fijos (tabla home_featured) ─────
   async function loadHomeProyectos() {
-    const grid    = document.getElementById('home-proyectos-grid');
-    const loading = document.getElementById('home-proyectos-loading');
+    const grid = document.getElementById('home-proyectos-grid');
     if (!grid) return;
 
-    // Mostrar loading cada vez que se vuelve a home
-    grid.innerHTML = '<div id="home-proyectos-loading" style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--text-tertiary);font-size:14px;letter-spacing:.08em;">Cargando proyectos…</div>';
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--text-tertiary);font-size:14px;letter-spacing:.08em;">Cargando proyectos…</div>';
 
-    const { data: projects, error } = await sb
-      .from('portfolio_projects')
-      .select('id, title, title_en, tipo, anio, comment, comment_en, images')
-      .eq('is_published', true);
+    const { data: items, error } = await sb
+      .from('home_featured')
+      .select('position, images, title, title_en, tipo, anio, comment, comment_en')
+      .eq('is_published', true)
+      .order('position');
 
-    if (error || !projects || projects.length === 0) {
-      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--text-tertiary);font-size:14px;letter-spacing:.08em;">No hay proyectos publicados todavía.</div>';
+    // Solo mostrar slots que tienen al menos una imagen o título
+    const filled = (items || []).filter(p => (p.images && p.images.length > 0) || p.title);
+
+    if (error || filled.length === 0) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--text-tertiary);font-size:14px;letter-spacing:.08em;">No hay proyectos destacados todavía.</div>';
       return;
     }
 
-    // Shuffle y tomar 4 aleatorios
-    const selection = [...projects].sort(() => Math.random() - 0.5).slice(0, 4);
+    const ctaText = T[lang]['dyn.proy.cta'] || (lang === 'en' ? 'Ask about this project →' : 'Consultá por este proyecto →');
 
-    grid.innerHTML = selection.map(p => {
+    grid.innerHTML = filled.map(p => {
       const imgs         = (p.images || []).filter(Boolean);
       const meta         = [p.tipo, p.anio].filter(Boolean).join(' · ');
       const displayTitle = (lang === 'en' && p.title_en) ? p.title_en : p.title;
@@ -641,7 +641,6 @@
       const waMsg = lang === 'en'
         ? encodeURIComponent(`Hi Gustavo. I saw the project "${displayTitle}" on the rødën site and I'd love to talk about something similar.`)
         : encodeURIComponent(`Hola Gustavo. Vi el proyecto "${displayTitle}" en el sitio de rødën y me gustaría conversar sobre algo similar.`);
-      const ctaText = T[lang]['dyn.proy.cta'] || (lang === 'en' ? 'Ask about this project →' : 'Consultá por este proyecto →');
 
       const slidesHtml = imgs.length > 0
         ? imgs.map((url, i) => `<div class="card-slide${i === 0 ? ' active kb-a' : ''}" style="background-image:url('${url}')"></div>`).join('')

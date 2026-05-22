@@ -238,6 +238,7 @@ body {
   <div class="tabs">
     <button class="tab-btn active" data-tab="proyectos">Proyectos</button>
     <button class="tab-btn" data-tab="inspiracion">Inspiración</button>
+    <button class="tab-btn" data-tab="home">Home</button>
     <button class="tab-btn" data-tab="hero">Hero</button>
   </div>
 
@@ -350,6 +351,20 @@ body {
     </div>
   </div>
 
+  <!-- ── HOME DESTACADOS ──────────────────────────────────────── -->
+  <div id="panel-home" class="app-content hidden">
+    <div class="actions-bar">
+      <h2>Proyectos destacados — Home</h2>
+    </div>
+    <p style="font-size:13px;color:var(--text-3);margin-bottom:32px;">Estos 4 proyectos aparecen fijos en la sección "Proyectos seleccionados" del home. Podés subir varias fotos por proyecto (se muestran como slideshow). Los slots vacíos no se muestran.</p>
+    <div id="home-featured-slots"></div>
+    <div style="margin-top:32px;display:flex;align-items:center;gap:16px;">
+      <button class="btn btn-primary" id="home-save-btn">Guardar cambios</button>
+      <span id="home-save-msg" style="font-size:13px;color:var(--text-3);"></span>
+    </div>
+    <div id="home-error" class="error-msg hidden" style="margin-top:16px;"></div>
+  </div>
+
   <!-- ── HERO ─────────────────────────────────────────────────── -->
   <div id="panel-hero" class="app-content hidden">
     <div class="actions-bar">
@@ -404,7 +419,7 @@ body {
   const sb = supabase.createClient(SB_URL, SB_KEY);
 
   /* ── Estado ─────────────────────────────────────────────── */
-  let activeTab  = 'proyectos';  // 'proyectos' | 'inspiracion' | 'hero'
+  let activeTab  = 'proyectos';  // 'proyectos' | 'inspiracion' | 'home' | 'hero'
   let editingId  = null;
   let slotUrls   = Array(15).fill('');
   let slotFiles  = Array(15).fill(null);
@@ -436,18 +451,28 @@ body {
     document.getElementById('panel-list').classList.remove('hidden');
     document.getElementById('panel-form').classList.add('hidden');
     document.getElementById('panel-hero').classList.add('hidden');
+    document.getElementById('panel-home').classList.add('hidden');
     renderList();
   }
   function showForm() {
     document.getElementById('panel-list').classList.add('hidden');
     document.getElementById('panel-form').classList.remove('hidden');
     document.getElementById('panel-hero').classList.add('hidden');
+    document.getElementById('panel-home').classList.add('hidden');
   }
   function showHero() {
     document.getElementById('panel-list').classList.add('hidden');
     document.getElementById('panel-form').classList.add('hidden');
     document.getElementById('panel-hero').classList.remove('hidden');
+    document.getElementById('panel-home').classList.add('hidden');
     loadHeroAdmin();
+  }
+  function showHome() {
+    document.getElementById('panel-list').classList.add('hidden');
+    document.getElementById('panel-form').classList.add('hidden');
+    document.getElementById('panel-hero').classList.add('hidden');
+    document.getElementById('panel-home').classList.remove('hidden');
+    loadHomeAdmin();
   }
 
   /* ── Tabs ────────────────────────────────────────────────── */
@@ -455,7 +480,8 @@ body {
     btn.addEventListener('click', () => {
       activeTab = btn.dataset.tab;
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === activeTab));
-      if (activeTab === 'hero') showHero();
+      if (activeTab === 'hero')  showHero();
+      else if (activeTab === 'home') showHome();
       else showList();
     });
   });
@@ -787,6 +813,159 @@ body {
     } else {
       showList();
     }
+  }
+
+  /* ── Home Featured ──────────────────────────────────────── */
+  let homeFeaturedData = [];    // datos actuales de BD
+  let homeSlotFiles    = {};    // { pos: [File,...] } — archivos nuevos por slot
+  let homeSlotUrls     = {};    // { pos: [url,...] } — URLs actuales por slot
+
+  async function loadHomeAdmin() {
+    setLoading(true, 'Cargando…');
+    const { data, error } = await sb
+      .from('home_featured')
+      .select('*')
+      .order('position');
+    setLoading(false);
+
+    homeFeaturedData = data || [];
+    homeSlotFiles = {};
+    homeSlotUrls  = {};
+
+    // Asegurarse de tener los 4 slots
+    const slots = [1,2,3,4].map(pos => {
+      const found = homeFeaturedData.find(r => r.position === pos);
+      return found || { position: pos, images: [], title: '', title_en: '', tipo: '', anio: '', comment: '', comment_en: '', is_published: true };
+    });
+
+    const container = document.getElementById('home-featured-slots');
+    container.innerHTML = slots.map(slot => {
+      const pos = slot.position;
+      homeSlotUrls[pos]  = [...(slot.images || [])];
+      homeSlotFiles[pos] = [];
+
+      const imgPreviews = (slot.images || []).map((url, i) => `
+        <div class="home-img-preview" data-pos="${pos}" data-idx="${i}" style="position:relative;display:inline-block;margin:4px;">
+          <div style="width:80px;height:60px;background:url('${url}') center/cover;border-radius:4px;border:1px solid var(--border);"></div>
+          <button onclick="homeRemoveImg(${pos},${i})" style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--text);color:var(--bg);border:none;cursor:pointer;font-size:10px;line-height:18px;text-align:center;">×</button>
+        </div>`).join('');
+
+      return `
+        <div style="padding:24px 0;border-bottom:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+            <span style="font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--text-3);">SLOT ${pos}</span>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-3);cursor:pointer;">
+              <input type="checkbox" id="home-pub-${pos}" ${slot.is_published ? 'checked' : ''}> Publicado
+            </label>
+          </div>
+          <div class="form-row" style="margin-bottom:12px;">
+            <div class="field"><label>Título ES *</label><input type="text" id="home-title-${pos}" value="${slot.title || ''}" placeholder="Ej: Departamento Belgrano"></div>
+            <div class="field"><label style="display:flex;align-items:center;gap:6px;">Título EN <span style="font-size:10px;font-weight:600;color:var(--text-3);background:var(--bg-2);padding:1px 5px;border-radius:3px;">EN</span></label><input type="text" id="home-title-en-${pos}" value="${slot.title_en || ''}" placeholder="E.g: Belgrano Apartment"></div>
+          </div>
+          <div class="form-row" style="margin-bottom:12px;">
+            <div class="field"><label>Tipo</label>
+              <select id="home-tipo-${pos}">
+                <option value="">—</option>
+                <option value="Equipamiento integral" ${slot.tipo==='Equipamiento integral'?'selected':''}>Equipamiento integral</option>
+                <option value="Ambiente completo" ${slot.tipo==='Ambiente completo'?'selected':''}>Ambiente completo</option>
+                <option value="Pieza puntual" ${slot.tipo==='Pieza puntual'?'selected':''}>Pieza puntual</option>
+              </select>
+            </div>
+            <div class="field"><label>Año</label><input type="number" id="home-anio-${pos}" value="${slot.anio || ''}" min="2010" max="2099" placeholder="2025"></div>
+          </div>
+          <div class="field" style="margin-bottom:12px;"><label>Descripción ES</label><textarea id="home-comment-${pos}" placeholder="Breve descripción…">${slot.comment || ''}</textarea></div>
+          <div class="field" style="margin-bottom:16px;"><label style="display:flex;align-items:center;gap:6px;">Descripción EN <span style="font-size:10px;font-weight:600;color:var(--text-3);background:var(--bg-2);padding:1px 5px;border-radius:3px;">EN</span></label><textarea id="home-comment-en-${pos}" placeholder="Brief description…">${slot.comment_en || ''}</textarea></div>
+          <div style="margin-bottom:8px;">
+            <p class="form-section-label" style="margin:0 0 8px;">Fotos <span style="font-weight:400;color:var(--text-3);">(podés subir varias — se muestran como slideshow)</span></p>
+            <div id="home-previews-${pos}" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;">${imgPreviews}</div>
+            <label class="btn btn-ghost" style="font-size:12px;padding:6px 14px;cursor:pointer;">
+              + Agregar fotos
+              <input type="file" accept="image/*" multiple style="display:none;" onchange="homeAddFiles(${pos}, this.files)">
+            </label>
+          </div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('home-save-btn').onclick = saveHomeAdmin;
+    document.getElementById('home-save-msg').textContent = '';
+    document.getElementById('home-error').classList.add('hidden');
+  }
+
+  // Exponer helpers en window para los onclick inline
+  window.homeRemoveImg = function(pos, idx) {
+    homeSlotUrls[pos].splice(idx, 1);
+    refreshHomePreviews(pos);
+  };
+
+  window.homeAddFiles = function(pos, files) {
+    if (!homeSlotFiles[pos]) homeSlotFiles[pos] = [];
+    homeSlotFiles[pos].push(...files);
+    refreshHomePreviews(pos);
+  };
+
+  function refreshHomePreviews(pos) {
+    const container = document.getElementById(`home-previews-${pos}`);
+    if (!container) return;
+    const existingHtml = homeSlotUrls[pos].map((url, i) => `
+      <div style="position:relative;display:inline-block;margin:4px;">
+        <div style="width:80px;height:60px;background:url('${url}') center/cover;border-radius:4px;border:1px solid var(--border);"></div>
+        <button onclick="homeRemoveImg(${pos},${i})" style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--text);color:var(--bg);border:none;cursor:pointer;font-size:10px;line-height:18px;text-align:center;">×</button>
+      </div>`).join('');
+    const newFilesHtml = (homeSlotFiles[pos] || []).map((f, i) => `
+      <div style="position:relative;display:inline-block;margin:4px;">
+        <div style="width:80px;height:60px;background:#eee;border-radius:4px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;color:#999;text-align:center;padding:4px;">${f.name.slice(0,15)}</div>
+      </div>`).join('');
+    container.innerHTML = existingHtml + newFilesHtml;
+  }
+
+  async function saveHomeAdmin() {
+    const errEl  = document.getElementById('home-error');
+    const msgEl  = document.getElementById('home-save-msg');
+    errEl.classList.add('hidden');
+    msgEl.textContent = '';
+    setLoading(true, 'Guardando…');
+
+    for (const pos of [1,2,3,4]) {
+      // Subir archivos nuevos
+      const newFiles = homeSlotFiles[pos] || [];
+      for (const file of newFiles) {
+        const ext  = file.name.split('.').pop().toLowerCase();
+        const path = `home-featured/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error: upErr } = await sb.storage.from('project-images').upload(path, file, { cacheControl: '31536000' });
+        if (!upErr) {
+          const { data: { publicUrl } } = sb.storage.from('project-images').getPublicUrl(path);
+          homeSlotUrls[pos].push(publicUrl);
+        }
+      }
+      homeSlotFiles[pos] = [];
+
+      // Armar payload
+      const payload = {
+        position:     pos,
+        images:       homeSlotUrls[pos].filter(Boolean),
+        title:        document.getElementById(`home-title-${pos}`)?.value.trim()    || '',
+        title_en:     document.getElementById(`home-title-en-${pos}`)?.value.trim() || null,
+        tipo:         document.getElementById(`home-tipo-${pos}`)?.value             || null,
+        anio:         parseInt(document.getElementById(`home-anio-${pos}`)?.value)   || null,
+        comment:      document.getElementById(`home-comment-${pos}`)?.value.trim()   || null,
+        comment_en:   document.getElementById(`home-comment-en-${pos}`)?.value.trim() || null,
+        is_published: document.getElementById(`home-pub-${pos}`)?.checked ?? true,
+      };
+
+      // Upsert por position
+      const existing = homeFeaturedData.find(r => r.position === pos);
+      if (existing) {
+        await sb.from('home_featured').update(payload).eq('id', existing.id);
+      } else {
+        await sb.from('home_featured').insert(payload);
+      }
+    }
+
+    setLoading(false);
+    msgEl.textContent = '✓ Guardado';
+    setTimeout(() => { msgEl.textContent = ''; }, 3000);
+    // Recargar para reflejar URLs actualizadas
+    loadHomeAdmin();
   }
 
   /* ── Hero: cargar (desktop + mobile) ────────────────────── */
