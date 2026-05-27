@@ -785,6 +785,138 @@
     });
   }
 
+  // ── Lightbox ─────────────────────────────────────────────────
+  (function initLightbox() {
+    const lb        = document.getElementById('lb');
+    const backdrop  = document.getElementById('lb-backdrop');
+    const lbInner   = document.getElementById('lb-inner');
+    const lbImg     = document.getElementById('lb-img');
+    const lbClose   = document.getElementById('lb-close');
+    const lbPrev    = document.getElementById('lb-prev');
+    const lbNext    = document.getElementById('lb-next');
+    const lbCounter = document.getElementById('lb-counter');
+
+    let lbImgs = [];   // URLs de todas las fotos del card activo
+    let lbCur  = 0;    // índice actual
+    let isOpen = false;
+
+    // Extrae las URLs background-image de todos los .card-slide de un container
+    function getSlideImgs(container) {
+      return [...container.querySelectorAll('.card-slide')]
+        .map(s => { const m = s.style.backgroundImage.match(/url\(["']?(.+?)["']?\)/); return m ? m[1] : null; })
+        .filter(Boolean);
+    }
+
+    // Índice del slide activo
+    function getActiveIdx(container) {
+      const slides = [...container.querySelectorAll('.card-slide')];
+      const idx = slides.findIndex(s => s.classList.contains('active'));
+      return idx >= 0 ? idx : 0;
+    }
+
+    // Muestra la imagen en el índice dado (con crossfade)
+    function showImg(idx, animate, dir) {
+      lbCur = ((idx % lbImgs.length) + lbImgs.length) % lbImgs.length;
+      lbCounter.textContent = lbImgs.length > 1 ? (lbCur + 1) + ' / ' + lbImgs.length : '';
+      lbPrev.hidden = lbImgs.length <= 1;
+      lbNext.hidden = lbImgs.length <= 1;
+      if (animate && dir !== undefined) {
+        const xOut = dir * -40;
+        const xIn  = dir * 40;
+        gsap.to(lbImg, { opacity: 0, x: xOut, duration: 0.14, ease: 'power2.in', onComplete: () => {
+          lbImg.style.backgroundImage = "url('" + lbImgs[lbCur] + "')";
+          gsap.fromTo(lbImg, { opacity: 0, x: xIn }, { opacity: 1, x: 0, duration: 0.2, ease: 'power2.out' });
+        }});
+      } else {
+        lbImg.style.backgroundImage = "url('" + lbImgs[lbCur] + "')";
+      }
+    }
+
+    function navigate(dir) {
+      if (lbImgs.length <= 1) return;
+      showImg(lbCur + dir, true, dir);
+    }
+
+    function open(container) {
+      lbImgs = getSlideImgs(container);
+      if (lbImgs.length === 0) return;
+      isOpen = true;
+
+      const rect = container.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+
+      // Pausar timer del slideshow
+      if (cardTimers.has(container)) clearInterval(cardTimers.get(container));
+
+      // Mostrar lightbox antes de animar
+      lb.hidden = false;
+      gsap.set(backdrop, { opacity: 0 });
+      gsap.set(lbImg, { opacity: 1, x: 0 });
+
+      showImg(getActiveIdx(container), false);
+
+      // clipPath que corresponde a la posición del card en la pantalla
+      const t = parseFloat((rect.top    / vh * 100).toFixed(2));
+      const r = parseFloat(((vw - rect.right)  / vw * 100).toFixed(2));
+      const b = parseFloat(((vh - rect.bottom) / vh * 100).toFixed(2));
+      const l = parseFloat((rect.left   / vw * 100).toFixed(2));
+
+      gsap.fromTo(lbInner,
+        { clipPath: 'inset(' + t + '% ' + r + '% ' + b + '% ' + l + '% round 0px)' },
+        { clipPath: 'inset(0% 0% 0% 0% round 0px)', duration: 0.48, ease: 'power3.inOut',
+          onComplete: () => { lbInner.style.clipPath = ''; } }
+      );
+      gsap.to(backdrop, { opacity: 1, duration: 0.35, ease: 'power2.out' });
+
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', onKey);
+    }
+
+    function close() {
+      if (!isOpen) return;
+      isOpen = false;
+      gsap.to([lbInner, backdrop], {
+        opacity: 0, duration: 0.22, ease: 'power2.in',
+        onComplete: () => {
+          lb.hidden = true;
+          gsap.set([lbInner, backdrop], { opacity: 1 });
+          lbImg.style.backgroundImage = '';
+          lbImgs = [];
+        }
+      });
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', onKey);
+    }
+
+    function onKey(e) {
+      if (e.key === 'Escape')      close();
+      if (e.key === 'ArrowRight')  navigate(1);
+      if (e.key === 'ArrowLeft')   navigate(-1);
+    }
+
+    // Delegación: click en cualquier .card-slideshow abre lightbox
+    document.addEventListener('click', e => {
+      const container = e.target.closest('.card-slideshow');
+      if (!container) return;
+      e.preventDefault();
+      open(container);
+    });
+
+    lbClose.addEventListener('click', close);
+    backdrop.addEventListener('click', close);
+    lbPrev.addEventListener('click', e => { e.stopPropagation(); navigate(-1); });
+    lbNext.addEventListener('click', e => { e.stopPropagation(); navigate(1); });
+
+    // Swipe mobile
+    let touchX0 = 0;
+    lbInner.addEventListener('touchstart', e => { touchX0 = e.touches[0].clientX; }, { passive: true });
+    lbInner.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - touchX0;
+      if (Math.abs(dx) > 48) navigate(dx > 0 ? -1 : 1);
+    });
+  })();
+
   // ── Hero: carga desktop y mobile desde Supabase ──────────────
   async function loadHeroImages() {
     const slidesDesktop = [...document.querySelectorAll('#hero-slides-desktop .hero-slide')];
