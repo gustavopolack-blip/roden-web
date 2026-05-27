@@ -1091,3 +1091,4 @@
   loadHeroImages(); // Carga hero desde tabla hero_slides
 
 })();
+
