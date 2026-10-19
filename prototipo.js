@@ -17,6 +17,37 @@
   };
   const wa = key => WA_BASE + encodeURIComponent(WA[key][lang]);
 
+  // ── Medición (GA4) ───────────────────────────────────────────
+  // Vacío = sin medición. Completar con el ID de medición de GA4 (G-XXXXXXX).
+  const GA_ID = '';
+  if (GA_ID) {
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { dataLayer.push(arguments); };
+    gtag('js', new Date());
+    // page_view lo manda showPage: el sitio cambia de sección sin cambiar la URL.
+    gtag('config', GA_ID, { send_page_view: false });
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+    document.head.appendChild(s);
+  }
+  function track(event, params) {
+    if (typeof window.gtag === 'function') window.gtag('event', event, params);
+  }
+
+  // Cada clic a WhatsApp es un lead. El tipo sale del mensaje precargado (claves de WA);
+  // los mensajes de un proyecto puntual no están en WA y quedan como 'proyecto'.
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href*="wa.me"]');
+    if (!a) return;
+    const text = new URL(a.href).searchParams.get('text') || '';
+    const page = a.closest('.page');
+    track('generate_lead', {
+      lead_type: Object.keys(WA).find(k => WA[k].es === text || WA[k].en === text) || 'proyecto',
+      section: page ? page.id.replace('page-', '') : 'flotante',
+    });
+  });
+
   const T = {
     es: {
       'nav.proyectos':'Proyectos','nav.estudio':'Estudio','nav.inspiracion':'Inspiración','nav.proceso':'Proceso',
@@ -475,6 +506,10 @@
     pages.forEach(p => p.classList.remove('active'));
     const target = document.getElementById('page-' + name);
     if (target) target.classList.add('active');
+    track('page_view', {
+      page_title: name,
+      page_location: location.origin + '/' + (name === 'home' ? '' : name),
+    });
     document.querySelectorAll('.nav-desktop .nav-link').forEach(link =>
       link.classList.toggle('active', link.dataset.page === name)
     );
